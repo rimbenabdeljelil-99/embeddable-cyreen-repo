@@ -1,0 +1,127 @@
+cubes:
+  # Cube 1: Fact zone visits
+  - name: fact_zone_visits
+    sql: |
+      SELECT *
+      FROM fact_zone_visits
+      WHERE track_id <> 5124
+    data_source: cap_2_3d_sensor
+
+    dimensions:
+      - name: visit_id
+        sql: visit_id
+        type: string
+        primary_key: true
+
+      - name: sensor_num
+        sql: sensor_num
+        type: string
+
+      - name: store_id
+        sql: store_id
+        type: number
+
+      - name: geometry_name
+        sql: geometry_name
+        type: string
+
+
+      - name: geometry_zone
+        sql: |
+          CASE
+            WHEN {CUBE}.geometry_name = 'Z4FZ1' THEN 'Fullfill Zone'
+            WHEN {CUBE}.geometry_name = 'Z4FZ2' THEN 'Max Zone'
+            WHEN {CUBE}.geometry_name = 'Z4FZ3' THEN 'More Zone'
+            WHEN {CUBE}.geometry_name = 'Z4FZ4' THEN 'ESN Zone'
+            WHEN {CUBE}.geometry_name = 'Z4FZ5' THEN 'Allstar Zone'
+            WHEN {CUBE}.geometry_name = 'Z4FZ6' THEN 'YFood Zone'
+            WHEN {CUBE}.geometry_name = 'Z4ZF7' THEN 'Zweitplatzierung Zone'
+          ELSE 'Unknown Zone'
+          END
+        type: string
+
+
+      - name: track_id
+        sql: track_id
+        type: string
+
+      - name: entry_ts
+        sql: entry_ts
+        type: time
+
+      - name: exit_ts
+        sql: exit_ts
+        type: time
+
+      - name: dwell_sec
+        sql: dwell_sec
+        type: number
+
+      - name: entry_src
+        sql: entry_src
+        type: string
+
+      - name: exit_src
+        sql: exit_src
+        type: string
+
+      - name: gender
+        sql: gender
+        type: string
+
+      - name: person_height
+        sql: person_height
+        type: number
+
+      - name: has_entry_event
+        sql: has_entry_event
+        type: boolean
+
+      - name: has_exit_event
+        sql: has_exit_event
+        type: boolean
+
+      - name: is_complete
+        sql: is_complete
+        type: boolean
+
+      - name: entry_hour
+        sql: entry_hour
+        type: number
+
+      - name: entry_date
+        sql: entry_date
+        type: time
+
+      - name: month_name
+        sql: TO_CHAR({entry_date}, 'Month')
+        type: string
+
+      - name: month_number
+        sql: EXTRACT(MONTH FROM {entry_date})
+        type: number
+
+      # Week number
+      - name: week_number
+        sql: EXTRACT(WEEK FROM {entry_date})
+        type: number
+
+# Date (formatted as YYYY-MM-DD)
+      - name: day_only
+        sql: TO_CHAR({entry_date}, 'YYYY-MM-DD')
+        type: time
+
+    measures:
+      - name: total_dwell_time
+        sql: dwell_sec
+        type: sum
+        title: Total Dwell Time
+      - name: avg_dwell_time_down
+        sql: dwell_sec
+        type: avg
+        title: Average Dwell Time Down
+
+      - name: avg_dwell_time
+        sql: ROUND({avg_dwell_time_down}::numeric,1)
+        type: number
+        title: Average Dwell Time

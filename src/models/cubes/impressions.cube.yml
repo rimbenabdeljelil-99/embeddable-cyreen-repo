@@ -1,0 +1,1553 @@
+cubes:
+  - name: impressions
+    title : impressions
+    data_source: my-db
+    sql: >
+     SELECT * 
+      FROM public.impressions  
+      {% if COMPILE_CONTEXT.securityContext.number_root %}  
+        WHERE number_root = '{ COMPILE_CONTEXT.securityContext.number_root }'
+      {% endif %}
+    ##WHERE number_root IN {{ list(COMPILE_CONTEXT.securityContext.number_root) }}
+
+
+    dimensions:
+      - name: id_impression
+        sql: id_impression
+        type: number
+        primary_key: true
+
+      - name: number_root
+        sql: number_root
+        type: number
+
+      - name: id_company
+        sql: id_company
+        type: number
+
+      - name: id_campaign
+        sql: id_campaign
+        type: number
+
+      - name: id_store
+        sql: id_store
+        type: number
+
+      - name: date
+        sql: date
+        type: time
+
+      - name: hour
+        sql: hour
+        type: number
+
+      - name: timestamp
+        sql: timestamp
+        type: time
+        title: Timestamp
+
+      - name: id_clip
+        sql: id_clip
+        type: number
+
+      - name: impressions_unfiltered
+        sql: impressions_unfiltered
+        type: number
+
+      - name: impressions_filtered
+        sql: impressions_filtered
+        type: number
+
+      - name: impressions_unfiltered_trigger
+        sql: impressions_unfiltered_trigger
+        type: number
+
+      - name: impressions_unfiltered_witness
+        sql: impressions_unfiltered_witness
+        type: number
+
+      - name: impressions_filtered_trigger
+        sql: impressions_filtered_trigger
+        type: number
+
+      - name: impressions_filtered_witness
+        sql: impressions_filtered_witness
+        type: number
+
+      - name: impressions_type
+        sql: impressions_type
+        type: string
+
+      
+
+
+
+      - name: name_country
+        sql: name_country
+        type: string
+
+      - name: name_store
+        sql: name_store
+        type: string
+        title: Store Name
+
+      - name: zip_code
+        sql: zip_code
+        type: string
+
+      - name: latitude
+        sql: latitude
+        type: number
+
+      - name: day
+        sql: TO_CHAR({timestamp}, 'YYYY-MM-DD')
+        type: time
+      
+
+      - name: longitude
+        sql: longitude
+        type: number
+
+      - name: name_market_type
+        sql: name_market_type
+        type: string
+
+      - name: hour_group
+        sql: hour_group
+        type: string
+
+      - name: gender
+        sql: gender
+        type: string
+
+      - name: age
+        sql: age
+        type: number
+
+      - name: nielsen_region_code
+        sql: CONCAT('Nielsen ', nielsen_region_code)
+        type: string
+        title: 'Nielsen Region'
+
+      - name: nielsen_region_desc
+        sql: nielsen_region_desc
+        type: string
+
+      - name: name_clip
+        sql: name_clip
+        type: string
+
+      - name: name_campaign
+        type: string
+        sql:
+          CASE
+            WHEN name_campaign = 'campaign_1' THEN 'Basic Report (Included)'
+            WHEN name_campaign = 'campaign_4' THEN 'Standard Report (Paid)'
+          ELSE name_campaign
+          END
+
+
+      - name: name_region
+        sql: name_region
+        type: string
+        title: 'Region'
+
+      - name: name_region2
+        sql: |
+          CASE 
+            WHEN name_region = 'Baden-Wuerttemberg' THEN 'BW'
+            WHEN name_region = 'Bayern' THEN 'BY'
+            WHEN name_region = 'Hamburg' THEN 'HH'
+            WHEN name_region = 'Sachsen' THEN 'SN'
+            WHEN name_region = 'Hessen' THEN 'HE'
+          ELSE name_region
+          END
+        type: string
+        title: 'Region2'
+
+
+      - name: month
+        sql: TO_CHAR(date::DATE, 'FMMonth')  
+        type: string  
+
+      - name: weekday
+        sql: CASE WHEN EXTRACT(DOW FROM date::DATE) = 0 THEN 7 ELSE EXTRACT(DOW FROM date::DATE) END
+        type: number
+
+      - name: week
+        sql: EXTRACT(WEEK FROM date::DATE)
+        type: number
+
+
+      
+
+
+
+    measures:
+
+
+      - name: start_date
+        sql: MIN(date)
+        type: time
+
+
+
+
+
+      - name: count
+        type: count
+        title: "number of impressions"
+      
+      - name: count_impressions_filtered
+        type: sum
+        sql: impressions_filtered
+        title: "sum of filtered impressions"
+      
+      - name: impression_unfiltered_calculation
+        type: number
+        sql: "1.5 * SUM(impressions_unfiltered)"
+        title: "Impressions"
+
+
+      - name: impression_unfiltered_calculation_despar
+        type: sum
+        sql: impressions_unfiltered
+        title: "Impressions Without Despar"
+      
+      - name: impression_unfiltered_calculation2
+        type: number
+        sql: "ROUND(1.5 * SUM(impressions_unfiltered))"
+        title: "Impressions2"
+
+      - name: impressions_trigger
+        type: number
+        sql: "1.5 * SUM(impressions_unfiltered_trigger)"
+        title: "Trigger"
+
+      - name: impressions_witness
+        type: number
+        sql: "1.5 * SUM(impressions_unfiltered_witness)"
+        title: "Witness"
+
+      - name: impressions_trigger_despar
+        type: number
+        sql: "SUM(impressions_unfiltered_trigger)"
+        title: "Trigger"
+
+      - name: impressions_witness_despar
+        type: number
+        sql: "SUM(impressions_unfiltered_witness)"
+        title: "Witness"
+
+    ##refresh_key:
+      ##every: 12 hour
+
+ 
+  - name: big_dm
+    title: big_dm
+    sql: >
+      SELECT *
+      FROM big_dm
+      {% if COMPILE_CONTEXT.securityContext.number_root %}  
+        WHERE number_root = '{ COMPILE_CONTEXT.securityContext.number_root }'
+      {% endif %}
+
+
+    data_source: my-db
+
+    dimensions:
+    - name: id_big_dm
+      sql: id_big_dm
+      type: number
+      primary_key: true
+
+    - name: number_root
+      sql: number_root
+      type: number
+
+    - name: id_company
+      sql: id_company
+      type: number
+
+    - name: reference_store
+      sql: reference_store
+      type: boolean
+
+    - name: id_campaign
+      sql: id_campaign
+      type: number
+
+    - name: id_store
+      sql: id_store
+      type: number
+
+    - name: year
+      sql: year
+      type: number
+
+    - name: month
+      sql: month
+      type: number
+
+
+    - name: month1
+      sql: TRIM(TO_CHAR(date::DATE, 'Month')) || ' ' || EXTRACT(YEAR FROM date::DATE)
+      type: string
+      title: Month
+
+    - name: week
+      sql: week
+      type: number
+      title: Week
+
+    - name: dow
+      sql: dow
+      type: number
+
+    - name: hour
+      sql: hour
+      type: number
+
+    - name: hour_group
+      sql: hour_group
+      type: string
+
+
+
+    - name: timestamp
+      sql: timestamp
+      type: time
+
+    - name: date
+      sql: date
+      type: time
+
+
+    - name: weekday
+      sql: CASE EXTRACT(DOW FROM date::DATE)
+          WHEN 0 THEN 'Sunday'
+          WHEN 1 THEN 'Monday'
+          WHEN 2 THEN 'Tuesday'
+          WHEN 3 THEN 'Wednesday'
+          WHEN 4 THEN 'Thursday'
+          WHEN 5 THEN 'Friday'
+          WHEN 6 THEN 'Saturday'
+        END
+      type: number
+
+
+
+
+    - name: name_checkout
+      sql: name_checkout
+      type: string
+
+    - name: number_adlevel
+      sql: number_adlevel
+      type: number
+
+    - name: name_adlevel
+      sql: name_adlevel
+      type: string
+      title: Analysis Group
+
+    - name: frequency
+      sql: frequency
+      type: number
+
+    - name: frequency_seen
+      sql: frequency_seen
+      type: number
+
+    - name: frequency_seen_a
+      sql: frequency_seen_a
+      type: number
+
+    - name: frequency_seen_b
+      sql: frequency_seen_b
+      type: number
+
+    - name: frequency_seen_c
+      sql: frequency_seen_c
+      type: number
+
+    - name: frequency_a
+      sql: frequency_a
+      type: number
+
+    - name: frequency_b
+      sql: frequency_b
+      type: number
+
+    - name: frequency_c
+      sql: frequency_c
+      type: number
+
+    - name: frequency_not_seen
+      sql: frequency_not_seen
+      type: number
+
+    - name: frequency_not_seen_a
+      sql: frequency_not_seen_a
+      type: number
+
+    - name: frequency_not_seen_b
+      sql: frequency_not_seen_b
+      type: number
+
+    - name: frequency_not_seen_c
+      sql: frequency_not_seen_c
+      type: number
+
+    - name: receipts
+      sql: receipts
+      type: number
+
+    - name: receipts_a
+      sql: receipts_a
+      type: number
+
+    - name: receipts_b
+      sql: receipts_b
+      type: number
+
+    - name: receipts_c
+      sql: receipts_c
+      type: number
+
+    - name: receipts_seen
+      sql: receipts_seen
+      type: number
+
+    - name: receipts_seen_a
+      sql: receipts_seen_a
+      type: number
+
+    - name: receipts_seen_b
+      sql: receipts_seen_b
+      type: number
+
+    - name: receipts_seen_c
+      sql: receipts_seen_c
+      type: number
+
+    - name: receipts_not_seen
+      sql: receipts_not_seen
+      type: number
+
+    - name: receipts_not_seen_a
+      sql: receipts_not_seen_a
+      type: number
+
+    - name: receipts_not_seen_b
+      sql: receipts_not_seen_b
+      type: number
+
+    - name: receipts_not_seen_c
+      sql: receipts_not_seen_c
+      type: number
+
+    - name: sales
+      sql: sales
+      type: number
+
+
+    - name: sales_campaign_period
+      sql: sales_campaign_period
+      type: number
+
+    - name: sales_past_year
+      sql: sales_past_year
+      type: number
+
+    - name: sales_quarter
+      sql: sales_quarter
+      type: number
+
+    - name: sales_week_before
+      sql: sales_week_before
+      type: number
+
+
+    - name: sales_a
+      sql: sales_a
+      type: number
+
+    - name: sales_b
+      sql: sales_b
+      type: number
+
+    - name: sales_c
+      sql: sales_c
+      type: number
+
+    - name: sales_seen
+      sql: sales_seen
+      type: number
+
+    - name: sales_seen_a
+      sql: sales_seen_a
+      type: number
+
+    - name: sales_seen_b
+      sql: sales_seen_b
+      type: number
+
+    - name: sales_seen_c
+      sql: sales_seen_c
+      type: number
+
+    - name: sales_not_seen
+      sql: sales_not_seen
+      type: number
+
+    - name: sales_not_seen_a
+      sql: sales_not_seen_a
+      type: number
+
+    - name: sales_not_seen_b
+      sql: sales_not_seen_b
+      type: number
+
+    - name: sales_not_seen_c
+      sql: sales_not_seen_c
+      type: number
+
+    - name: revenue
+      sql: revenue
+      type: number
+
+    - name: revenue_a
+      sql: revenue_a
+      type: number
+
+    - name: revenue_b
+      sql: revenue_b
+      type: number
+
+    - name: revenue_c
+      sql: revenue_c
+      type: number
+
+    - name: revenue_seen
+      sql: revenue_seen
+      type: number
+
+    - name: revenue_seen_a
+      sql: revenue_seen_a
+      type: number
+
+    - name: revenue_seen_b
+      sql: revenue_seen_b
+      type: number
+
+    - name: revenue_seen_c
+      sql: revenue_seen_c
+      type: number
+
+    - name: revenue_not_seen
+      sql: revenue_not_seen
+      type: number
+
+    - name: revenue_not_seen_a
+      sql: revenue_not_seen_a
+      type: number
+
+    - name: revenue_not_seen_b
+      sql: revenue_not_seen_b
+      type: number
+
+    - name: revenue_not_seen_c
+      sql: revenue_not_seen_c
+      type: number
+
+    - name: impressions_unfiltered
+      sql: impressions_unfiltered
+      type: number
+
+    - name: impressions_filtered
+      sql: impressions_filtered
+      type: number
+
+    - name: clouds
+      sql: clouds
+      type: number
+
+    - name: humidity
+      sql: humidity
+      type: number
+
+    - name: week_count_campaign_period
+      sql: week_count_campaign_period
+      type: number
+
+    - name: week_count_past_year
+      sql: week_count_past_year
+      type: number
+
+    - name: week_count_quarter
+      sql: week_count_quarter
+      type: number
+
+    - name: week_count_week_before
+      sql: week_count_week_before
+      type: number
+
+
+    - name: temp
+      sql: temp
+      type: number
+
+    - name: feels_like
+      sql: feels_like
+      type: number
+
+
+    - name: weather_bins
+      type: string
+      sql: |
+        CASE
+          WHEN temp < 10 THEN '0°'
+          WHEN temp < 20 THEN '10°'
+          WHEN temp < 30 THEN '20°'
+          WHEN temp < 40 THEN '30°'
+          WHEN temp < 50 THEN '40°'
+          WHEN temp < 60 THEN '50°'
+          WHEN temp < 70 THEN '60°'
+          WHEN temp < 80 THEN '70°'
+          WHEN temp < 90 THEN '80°'
+          WHEN temp < 100 THEN '90°'
+          ELSE '100°+'
+        END
+      title: Weather Group
+
+
+    - name: weather_feels_bins
+      type: string
+      sql: |
+        CASE
+          WHEN feels_like < 10 THEN '0°'
+          WHEN feels_like < 20 THEN '10°'
+          WHEN feels_like < 30 THEN '20°'
+          WHEN feels_like < 40 THEN '30°'
+          WHEN feels_like < 50 THEN '40°'
+          WHEN feels_like < 60 THEN '50°'
+          WHEN feels_like < 70 THEN '60°'
+          WHEN feels_like < 80 THEN '70°'
+          WHEN feels_like < 90 THEN '80°'
+          WHEN feels_like < 100 THEN '90°'
+          ELSE '100°+'
+        END
+      title: Weather Feels Group
+
+
+    - name: rain_per_hour
+      sql: rain_per_hour
+      type: number
+
+    - name: rain_bool
+      sql: CASE WHEN rain_per_hour != 0 THEN 'Yes' ELSE 'No' END
+      type: string
+      title : Rain
+
+    - name: rain_bool_tf
+      sql: CASE WHEN rain_per_hour != 0 THEN 'Atrue' ELSE 'Bfalse' END
+      type: string
+
+    - name: snow_per_hour
+      sql: snow_per_hour
+      type: number
+
+    - name: snow_bool
+      sql: CASE WHEN snow_per_hour != 0 THEN 'Yes' ELSE 'No' END
+      type: string
+      title: Snow
+
+
+    - name: visibility
+      sql: visibility
+      type: number
+
+    - name: wind_speed
+      sql: wind_speed
+      type: number
+
+    - name: name_market_type
+      sql: name_market_type
+      type: string
+      title: Name Market Type
+
+    - name: name_store
+      sql: name_store
+      type: string
+
+    - name: zip_code
+      sql: zip_code
+      type: string
+
+    - name: latitude
+      sql: latitude
+      type: number
+
+    - name: longitude
+      sql: longitude
+      type: number
+
+    - name: name_country
+      sql: name_country
+      type: string
+
+    - name: name_region
+      sql: name_region
+      type: string
+
+    - name: nielsen_region_code
+      sql: CONCAT('Nielsen ', nielsen_region_code)
+      type: string
+      title: 'Nielsen Region'
+
+    - name: nielsen_region_desc
+      sql: nielsen_region_desc
+      type: string
+
+    - name: name_campaign
+      type: string
+      sql:
+        CASE
+          WHEN name_campaign = 'campaign_1' THEN 'Basic Report (Included)'
+          WHEN name_campaign = 'campaign_4' THEN 'Standard Report (Paid)'
+        ELSE name_campaign
+        END
+
+    - name: name_brand
+      sql: name_brand
+      type: string
+
+    - name: name_manufacturer
+      sql: name_manufacturer
+      type: string
+
+    - name: id_advertiser_brand
+      sql: id_advertiser_brand
+      type: number
+
+    - name: name_retailer
+      sql: name_retailer
+      type: string
+
+    - name: contact_type
+      sql: contact_type
+      type: string
+
+
+    - name: activity_1
+      sql: activity_1
+      type: boolean
+
+    - name: activity_2
+      sql: activity_2
+      type: boolean
+
+    - name: activity_3
+      sql: activity_3
+      type: boolean
+
+    - name: activity_4
+      sql: activity_4
+      type: boolean
+    
+    - name: activity_5
+      sql: activity_5
+      type: boolean
+
+      
+
+
+    measures:
+
+
+    - name: month_sort
+      sql: |
+        STRING_AGG(
+          DISTINCT 
+          (EXTRACT(YEAR FROM date::DATE)::INT * 100 + EXTRACT(MONTH FROM date::DATE)::INT)::TEXT, 
+          ', '
+        )
+      type: string
+      title: "month sort"
+
+
+    - name: avg_temp_base 
+      sql: temp
+      type: avg
+      title: Temperature (°C) Base
+
+    - name: avg_temp
+      sql: ROUND(CAST({avg_temp_base} AS numeric), 0)
+      type: number
+      title: Temperature (°C)
+
+    
+
+    - name: avg_rain  
+      sql: rain_per_hour
+      type: avg
+      title: Rain (millimeter)
+
+    - name: avg_snow  
+      sql: snow_per_hour
+      type: avg
+      title: Snow (millimeter)
+
+    - name: avg_feels_like
+      sql: feels_like
+      type: avg
+      title: Temperature (Feels Like °C)
+
+    - name: avg_clouds  
+      sql: clouds
+      type: avg
+      title: Clouds (%)
+
+
+    - name: hour_value  
+      sql: MIN(hour)
+      type: number
+
+    - name: weekday_agg_string
+      sql: |
+        STRING_AGG(
+          DISTINCT 
+          CASE 
+            WHEN EXTRACT(DOW FROM date::DATE) = 0 THEN '7' 
+            ELSE CAST(EXTRACT(DOW FROM date::DATE) AS VARCHAR) 
+          END, 
+          ', '
+        )
+      type: string
+      title: "Weekdays (Aggregated)"
+
+    - name : rain_bool_tftf
+      sql: "STRING_AGG(DISTINCT {rain_bool_tf}, ', ')"
+      type: string
+      title: "Rain Bool TFTF"
+
+    - name : name_adlevel1
+      sql: "STRING_AGG(DISTINCT name_adlevel, ', ')"
+      type: string
+      title: "Analysis Group Measure"
+
+    - name : name_adlevel2
+      sql: "{name_adlevel1}"
+      type: max
+      title: "Analysis Group Measure2"
+  
+
+    - name: count
+      type: count
+      title: "# of records"
+
+    - name: sum_frequency
+      type: sum
+      sql: frequency
+      title: "Total Frequency"
+
+    - name: sum_frequency_seen
+      type: sum
+      sql: frequency_seen
+      title: "Total Frequency Seen"
+
+    - name: sum_frequency_seen_a
+      type: sum
+      sql: frequency_seen_a
+      title: "Total Frequency Seen A"
+
+    - name: sum_frequency_seen_b
+      type: sum
+      sql: frequency_seen_b
+      title: "Total Frequency Seen B"
+
+    - name: sum_frequency_seen_c
+      type: sum
+      sql: frequency_seen_c
+      title: "Total Frequency Seen C"
+
+    - name: sum_frequency_seen_a_b
+      type: number
+      sql: "{sum_frequency_seen_a} + {sum_frequency_seen_b}"
+      title: "Total Frequency Seen A B"
+
+    - name: sum_frequency_not_seen
+      type: sum
+      sql: frequency_not_seen
+      title: "Total Frequency Not Seen"
+    
+
+    - name: sum_receipts
+      type: sum
+      sql: receipts
+      title: "Total Receipts"
+
+    - name: sum_receipts_seen
+      type: sum
+      sql: receipts_seen
+      title: "Total Receipts Seen"
+
+    - name: sum_receipts_seen_a
+      type: sum
+      sql: receipts_seen_a
+      title: "Total Receipts Seen A"
+
+    - name: sum_receipts_seen_b
+      type: sum
+      sql: receipts_seen_b
+      title: "Total Receipts Seen B"
+
+    - name: sum_receipts_seen_c
+      type: sum
+      sql: receipts_seen_c
+      title: "Total Receipts Seen C"
+
+    - name: sum_receipts_seen_a_b
+      type: number
+      sql: "{sum_receipts_seen_a} + {sum_receipts_seen_b}"
+      title: "Total Receipts Seen A B"
+
+    - name: sum_receipts_not_seen
+      type: sum
+      sql: receipts_not_seen
+      title: "Total Receipts_Not_Seen"
+
+    - name: sum_sales
+      type: sum
+      sql: sales
+      title: "Sales"
+
+    - name: sum_sales_campaign_period
+      type: sum
+      sql: sales_campaign_period
+      title: "Sales in Campaign Period"
+
+    - name: sum_revenue
+      type: sum
+      sql: revenue
+      title: "Revenue"
+
+    - name: avg_frequency
+      type: avg
+      sql: frequency
+      title: "Average Frequency"
+
+    - name: avg_sales
+      type: avg
+      sql: sales
+      title: "Average Sales"
+
+    - name: avg_revenue
+      type: avg
+      sql: revenue
+      title: "Average Revenue"
+
+    - name: sum_impressions_filtered
+      type: sum
+      sql: impressions_filtered
+      title: "Sum of Filtered Impressions"
+
+    - name: conversion_seen
+      type: number
+      sql: "SUM(receipts_seen) / NULLIF(SUM(frequency_seen), 0)"
+      title: "Conversion Seen"
+      
+    - name: conversion_not_seen
+      type: number
+      sql: "SUM(receipts_not_seen) / NULLIF(SUM(frequency_not_seen), 0)"
+      title: "Conversion Not Seen"
+
+    - name: conversion_not_seen_a
+      type: number
+      sql: "SUM(receipts_not_seen_a) / NULLIF(SUM(frequency_not_seen_a), 0)"
+      title: "Conversion Not Seen A"
+
+    - name: conversion_not_seen_b
+      type: number
+      sql: "SUM(receipts_not_seen_b) / NULLIF(SUM(frequency_not_seen_b), 0)"
+      title: "Conversion Not Seen B"
+
+    - name: conversion_not_seen_c
+      type: number
+      sql: "SUM(receipts_not_seen_c) / NULLIF(SUM(frequency_not_seen_c), 0)"
+      title: "Conversion Not Seen C"
+
+    - name: shopper_times_seen
+      type: number
+      sql: "1 / NULLIF({conversion_seen}, 0)"
+      title: "Shopper Times Seen"
+
+    - name: shopper_times_not_seen
+      type: number
+      sql: "1 / NULLIF({conversion_not_seen}, 0)"
+      title: "Shopper Times Not Seen"
+
+    - name: conversion_difference
+      type: number
+      sql: "100*({conversion_seen}-{conversion_not_seen})"
+      title: "Conversion Difference"
+
+    - name: conversion_difference_base
+      type: number
+      sql: "COALESCE(({conversion_seen} - {conversion_not_seen}), -999999)"
+      title: "Conversion Difference Base"
+      
+      
+    - name: conversion_uplift
+      type: number
+      sql: "ROUND((100*(({conversion_seen} / NULLIF({conversion_not_seen}, 0)) - 1)),0)"
+      title: "Conversion Uplift"
+
+    - name: conversion_uplift_without_calculation
+      type: number
+      sql: "(({conversion_seen} / NULLIF({conversion_not_seen}, 0)) - 1)"
+      title: "Conversion Uplift Without Calculation"
+
+    - name: conversion_uplift_sort
+      type: number
+      sql: "COALESCE((({conversion_seen} / NULLIF({conversion_not_seen}, 0)) - 1), -9999)" 
+      title: "Conversion Uplift Sort"
+
+      
+    - name: sp_cr_uplift_calculation
+      type: number
+      sql: "ROUND({conversion_uplift_without_calculation} * 100,0)"
+      title: "SP CR Uplift Calculation"
+      
+    - name: sp_cr_uplift_negative
+      type: string
+      sql: "CASE WHEN {conversion_uplift_without_calculation} < 0 THEN {sp_cr_uplift_calculation} ELSE NULL END"
+      title: "SP CR Uplift Negative"
+      
+    - name: sp_cr_uplift_positive
+      type: number
+      sql: "CASE WHEN {conversion_uplift_without_calculation} > 0 THEN {sp_cr_uplift_calculation} ELSE NULL END"
+      title: "SP CR Uplift Positive"
+
+      
+    - name: basket_uplift
+      type: number
+      sql: "(({with_cap_basket_size} / NULLIF({without_cap_basket_size}, 0)) - 1)"
+      title: "Basket Uplift"
+    
+    - name: basket_uplift_sort
+      type: number
+      sql: "COALESCE((({with_cap_basket_size} / NULLIF({without_cap_basket_size}, 0)) - 1), -9999)" 
+      title: "Basket Uplift Sort"
+
+    - name: basket_difference_base
+      type: number
+      sql: "COALESCE(({with_cap_basket_size} - {without_cap_basket_size}), -999999)"
+      title: "basket Difference Base"
+
+    - name: basket_difference
+      type: number
+      sql: "({with_cap_basket_size} - {without_cap_basket_size})"
+      title: "Basket Difference"
+
+
+
+    
+      
+    - name: sp_basket_uplift_calculation
+      type: number
+      sql: "ROUND({basket_uplift} * 100, 0)"
+      title: "SP Basket Uplift Calculation"
+      
+    - name: sp_basket_uplift_negative
+      type: number
+      sql: "CASE WHEN {basket_uplift} < 0 THEN {sp_basket_uplift_calculation} ELSE NULL END"
+      title: "SP Basket Uplift Negative"
+      
+    - name: sp_basket_uplift_positive
+      type: number
+      sql: "CASE WHEN {basket_uplift} > 0 THEN {sp_basket_uplift_calculation} ELSE NULL END"
+      title: "SP Basket Uplift Positive"
+      
+    - name: sales_uplift_absolut
+      type: number
+      sql: "SUM(sales_seen) - {sales_expected}"
+      title: "Sales Uplift Absolute"
+
+    - name: sales_uplift_absolut_a
+      type: number
+      sql: "SUM(sales_seen_a) - {sales_expected_a}"
+      title: "Sales Uplift Absolute A"
+
+    - name: sales_uplift_absolut_b
+      type: number
+      sql: "SUM(sales_seen_b) - {sales_expected_b}"
+      title: "Sales Uplift Absolute B"
+
+    - name: sales_uplift_absolut_c
+      type: number
+      sql: "SUM(sales_seen_c) - {sales_expected_c}"
+      title: "Sales Uplift Absolute C"
+
+    - name: sales_uplift_absolut_a_b
+      type: number
+      sql: "(SUM(sales_seen_a) + SUM(sales_seen_b)) - {sales_expected_a_b}"
+      title: "Sales Uplift Absolute A B"
+
+    - name: revenue_uplift_absolut
+      type: number
+      sql: "SUM(revenue_seen) - {revenue_expected}"
+      title: "Revenue Uplift Absolute"
+      
+    - name: sales_expected
+      type: number
+      sql: "SUM(frequency_seen) * {conversion_not_seen} * {avg_sales_not_seen}"
+      title: "Sales Expected"
+
+    - name: sales_expected_a
+      type: number
+      sql: "SUM(frequency_seen_a) * {conversion_not_seen_a} * {avg_sales_not_seen_a}"
+      title: "Sales Expected A"
+    
+    - name: sales_expected_b
+      type: number
+      sql: "SUM(frequency_seen_b) * {conversion_not_seen_b} * {avg_sales_not_seen_b}"
+      title: "Sales Expected B"
+
+    - name: sales_expected_c
+      type: number
+      sql: "SUM(frequency_seen_c) * {conversion_not_seen_c} * {avg_sales_not_seen_c}"
+      title: "Sales Expected C"
+      
+    - name: sales_expected_a_b
+      type: number
+      sql: "{sum_frequency_seen_a_b} * {conversion_not_seen} * {avg_sales_not_seen}"
+      title: "Sales Expected A B"
+
+    - name: revenue_expected
+      type: number
+      sql: "SUM(frequency_seen) * {conversion_not_seen} * {avg_revenue_not_seen}"
+      title: "Revenue Expected"
+
+
+      
+    - name: avg_sales_not_seen
+      type: number
+      sql: "SUM(sales_not_seen) / NULLIF(SUM(receipts_not_seen), 0)"
+      title: "Avg Sales Not Seen"
+
+
+    - name: avg_sales_not_seen_a
+      type: number
+      sql: "SUM(sales_not_seen_a) / NULLIF(SUM(receipts_not_seen_a), 0)"
+      title: "Avg Sales Not Seen A"
+
+    - name: avg_sales_not_seen_b
+      type: number
+      sql: "SUM(sales_not_seen_b) / NULLIF(SUM(receipts_not_seen_b), 0)"
+      title: "Avg Sales Not Seen B"
+
+
+    - name: avg_sales_not_seen_c
+      type: number
+      sql: "SUM(sales_not_seen_c) / NULLIF(SUM(receipts_not_seen_c), 0)"
+      title: "Avg Sales Not Seen C"
+
+    - name: avg_revenue_not_seen
+      type: number
+      sql: "SUM(revenue_not_seen) / NULLIF(SUM(receipts_not_seen), 0)"
+      title: "Avg Revenue Not Seen"
+      
+    - name: sales_uplift
+      type: number
+      sql: "((SUM(sales) / NULLIF(SUM(sales) - ({sales_uplift_absolut}), 0) - 1))"
+      title: "Sales Uplift2"
+
+    - name: sales_uplift1
+      type: number
+      sql: "((SUM(sales) / NULLIF(SUM(sales) - ({sales_uplift_absolut}), 0) - 1)*100)"
+      title: "Sales Uplift"
+
+    - name: sales_uplift1_a
+      type: number
+      sql: "((SUM(sales_a) / NULLIF(SUM(sales_a) - ({sales_uplift_absolut_a}), 0) - 1)*100)"
+      title: "Sales Uplift Spot A"
+
+    - name: sales_uplift1_b
+      type: number
+      sql: "((SUM(sales_b) / NULLIF(SUM(sales_b) - ({sales_uplift_absolut_b}), 0) - 1)*100)"
+      title: "Sales Uplift Spot B"
+
+    - name: sales_uplift1_c
+      type: number
+      sql: "((SUM(sales_c) / NULLIF(SUM(sales_c) - ({sales_uplift_absolut_c}), 0) - 1)*100)"
+      title: "Sales Uplift Spot B"
+
+    - name: sales_uplift1_a_b
+      type: number
+      sql: "(((SUM(sales_a) + SUM(sales_b)) / NULLIF((SUM(sales_a) + SUM(sales_b)) - ({sales_uplift_absolut_a_b}), 0) - 1)*100)"
+      title: "Sales Uplift Spot A B"
+
+    - name: revenue_uplift
+      type: number
+      sql: "(SUM(revenue) / NULLIF(SUM(revenue) - ({revenue_uplift_absolut}), 0) - 1)"
+      title: "Revenue Uplift"
+
+
+    
+      
+    - name: sales_uplift_no_negative
+      type: number
+      sql: "CASE WHEN {sales_uplift1} < 0 THEN 0 ELSE {sales_uplift1} END"
+      title: "Sales Uplift (No Negative)"
+
+    - name: sales_uplift_no_negative_a
+      type: number
+      sql: "CASE WHEN {sales_uplift1_a} < 0 THEN 0 ELSE {sales_uplift1_a} END"
+      title: "Sales Uplift Spot A"
+
+    - name: sales_uplift_no_negative_b
+      type: number
+      sql: "CASE WHEN {sales_uplift1_b} < 0 THEN 0 ELSE {sales_uplift1_b} END"
+      title: "Sales Uplift Spot B"
+
+    - name: sales_uplift_no_negative_c
+      type: number
+      sql: "CASE WHEN {sales_uplift1_c} < 0 THEN 0 ELSE {sales_uplift1_c} END"
+      title: "Sales Uplift Spot C"
+
+    - name: sales_uplift_no_negative_a_b
+      type: number
+      sql: "CASE WHEN {sales_uplift1_a_b} < 0 THEN 0 ELSE {sales_uplift1_a_b} END"
+      title: "Sales Uplift (No Negative) Spot A B"
+
+    
+    - name: revenue_uplift_no_negative
+      type: number
+      sql: "CASE WHEN {revenue_uplift} < 0 THEN 0 ELSE {revenue_uplift} END"
+      title: "Revenue Uplift (No Negative)"
+
+    - name: sales_uplift_percentage
+      type: number
+      sql: "ROUND(({sales_uplift_no_negative}),2)"
+      title: "Sales Uplift Percentage"
+
+    - name: revenue_uplift_percentage
+      type: number
+      sql: "ROUND(({revenue_uplift_no_negative})::numeric * 100, 2)"
+      title: "Revenue Uplift Percentage"
+
+    - name: with_cap_conversion_rate
+      type: number
+      sql: "100.0 * {sum_receipts_seen} / NULLIF({sum_frequency_seen}, 0)"
+      title: "With C.A.P."
+
+    - name: with_cap_conversion_rate_spot_a
+      type: number
+      sql: "100.0 * {sum_receipts_seen_a} / NULLIF({sum_frequency_seen_a}, 0)"
+      title: "With C.A.P. Spot A"
+
+    - name: with_cap_conversion_rate_spot_c
+      type: number
+      sql: "100.0 * {sum_receipts_seen_c} / NULLIF({sum_frequency_seen_c}, 0)"
+      title: "With C.A.P. Spot C"
+
+    - name: with_cap_conversion_rate_spot_b
+      type: number
+      sql: "100.0 * {sum_receipts_seen_b} / NULLIF({sum_frequency_seen_b}, 0)"
+      title: "With C.A.P. Spot B"
+
+    - name: with_cap_conversion_rate_spot_a_b
+      type: number
+      sql: "100.0 * {sum_receipts_seen_a_b} / NULLIF({sum_frequency_seen_a_b}, 0)"
+      title: "With C.A.P. Spot A B"
+
+
+    - name: without_cap_conversion_rate
+      type: number
+      sql: "100.0 * {sum_receipts_not_seen} / NULLIF({sum_frequency_not_seen}, 0)"
+      title: "Without C.A.P."
+
+
+    - name: with_cap_basket_size
+      type: number
+      sql: "SUM(sales_seen) / NULLIF(SUM(receipts_seen), 0)"
+      title: "With C.A.P"
+
+    - name: with_cap_basket_size_a
+      type: number
+      sql: "SUM(sales_seen_a) / NULLIF(SUM(receipts_seen_a), 0)"
+      title: "With C.A.P Spot A"
+
+    - name: with_cap_basket_size_b
+      type: number
+      sql: "SUM(sales_seen_b) / NULLIF(SUM(receipts_seen_b), 0)"
+      title: "With C.A.P Spot B"
+
+    - name: with_cap_basket_size_c
+      type: number
+      sql: "SUM(sales_seen_c) / NULLIF(SUM(receipts_seen_c), 0)"
+      title: "With C.A.P Spot C"
+
+    - name: with_cap_basket_size_a_b
+      type: number
+      sql: "{sum_sales_seen_a_b} / NULLIF({sum_receipts_seen_a_b}, 0)"
+      title: "With C.A.P Spot A B"
+
+    - name: without_cap_basket_size
+      type: number
+      sql: "SUM(sales_not_seen) / NULLIF(SUM(receipts_not_seen), 0)"
+      title: "Without C.A.P"
+
+    - name: sum_sales_seen
+      type: sum
+      sql: sales_seen
+      title: "Sales with C.A.P"
+
+    - name: sum_sales_seen_a
+      type: sum
+      sql: sales_seen_a
+      title: "Sales with C.A.P A"
+
+    - name: sum_sales_seen_b
+      type: sum
+      sql: sales_seen_b
+      title: "Sales with C.A.P B"
+
+    - name: sum_sales_seen_c
+      type: sum
+      sql: sales_seen_c
+      title: "Sales with C.A.P C"
+
+    - name: sum_sales_seen_a_b
+      type: number
+      sql: "{sum_sales_seen_a} + {sum_sales_seen_b}"
+      title: "Sales with C.A.P A B"
+
+    - name: sum_sales_not_seen
+      type: sum
+      sql: sales_not_seen
+      title: "Sales without C.A.P"
+
+    - name: sum_revenue_seen
+      type: sum
+      sql: revenue_seen
+      title: "Revenue with C.A.P"
+
+    - name: sum_revenue_not_seen
+      type: sum
+      sql: revenue_not_seen
+      title: "Revenue without C.A.P"
+
+   
+#####reference store
+
+    - name: sum_sales_campaign_period
+      type: sum
+      sql: sales_campaign_period
+      title: "Sales Campaign Period"
+
+    - name: avg_sales_campaign_period
+      type: number
+      sql: "{sum_sales_campaign_period} / NULLIF({week_count_campaign_period_min}, 0)"
+      title: "Average Sales Campaign Period"
+
+    - name: sum_sales_past_year
+      type: sum
+      sql: sales_past_year
+      title: "Sales Past Year"
+
+    - name: avg_sales_past_year
+      type: number
+      sql: "{sum_sales_past_year} / NULLIF(MIN(week_count_past_year), 0)"
+      title: "Average Sales Past Year"
+
+
+    
+
+    - name: sum_sales_campaign_period_reference
+      type: sum
+      sql: sales_campaign_period
+      title: "Sales Campaign Period Reference"
+      filters:
+          - sql: "{CUBE}.reference_store = TRUE"
+
+    - name: sum_sales_past_year_reference
+      type: sum
+      sql: sales_past_year
+      title: "Sales Past Year Reference"
+      filters:
+          - sql: "{CUBE}.reference_store = TRUE"
+
+    - name: sum_sales_quarter_reference
+      type: sum
+      sql: sales_quarter
+      title: "Sales Quarter Reference"
+      filters:
+          - sql: "{CUBE}.reference_store = TRUE"    
+
+
+    - name: sum_sales_week_before_reference
+      type: sum
+      sql: sales_week_before
+      title: "Sales Week Before Reference"
+      filters:
+          - sql: "{CUBE}.reference_store = TRUE"   
+
+
+##cap store
+
+
+    - name: sum_sales_campaign_period_cap
+      type: sum
+      sql: sales_campaign_period
+      title: "Sales Campaign Period C.A.P."
+      filters:
+          - sql: "{CUBE}.reference_store = FALSE"
+
+    - name: sum_sales_past_year_cap
+      type: sum
+      sql: sales_past_year
+      title: "Sales Past Year C.A.P."
+      filters:
+          - sql: "{CUBE}.reference_store = FALSE"
+
+    - name: sum_sales_quarter_cap
+      type: sum
+      sql: sales_quarter
+      title: "Sales Quarter C.A.P."
+      filters:
+          - sql: "{CUBE}.reference_store = FALSE"    
+
+
+    - name: sum_sales_week_before_cap
+      type: sum
+      sql: sales_week_before
+      title: "Sales Week Before C.A.P."
+      filters:
+          - sql: "{CUBE}.reference_store = FALSE"   
+
+    - name: week_count_campaign_period_min
+      type: min
+      sql: week_count_campaign_period
+      title: "Week Count campaign period min"
+
+    ### C.A.P Store Measures
+    - name: avg_sales_campaign_period_cap
+      type: number
+      sql: "{sum_sales_campaign_period_cap} / NULLIF({week_count_campaign_period_min}, 0)"
+      title: "Average Sales Campaign Period C.A.P Store"
+
+    - name: avg_sales_past_year_cap
+      type: number
+      sql: "{sum_sales_past_year_cap} / NULLIF(MIN(week_count_past_year), 0)"
+      title: "Average Sales Past Year C.A.P Store"
+
+    - name: avg_sales_past_quarter_cap
+      type: number
+      sql: "{sum_sales_quarter_cap} / NULLIF(MIN(week_count_quarter), 0)"
+      title: "Average Sales Past Quarter C.A.P Store"
+
+    - name: avg_sales_week_before_cap
+      type: number
+      sql: "{sum_sales_week_before_cap} / NULLIF(MIN(week_count_week_before), 0)"
+      title: "Average Sales Week Before C.A.P Store"
+
+    ### C.A.P Store Impact Measures (percentages)
+    - name: impact_campaign_vs_year_cap
+      type: number
+      sql: "({avg_sales_campaign_period_cap} / NULLIF({avg_sales_past_year_cap}, 0)) * 100"
+      title: "Campaign vs Past Year Impact C.A.P Store (%)"
+
+    
+
+    - name: impact_campaign_vs_quarter_cap
+      type: number
+      sql: "({avg_sales_campaign_period_cap} / NULLIF({avg_sales_past_quarter_cap}, 0)) * 100"
+      title: "Campaign vs Past Quarter Impact C.A.P Store (%)"
+
+    - name: impact_campaign_vs_week_before_cap
+      type: number
+      sql: "({avg_sales_campaign_period_cap} / NULLIF({avg_sales_week_before_cap}, 0)) * 100"
+      title: "Campaign vs Week Before Impact C.A.P Store (%)"
+
+    ### Reference Store Measures
+    - name: avg_sales_campaign_period_reference
+      type: number
+      sql: "{sum_sales_campaign_period_reference} / NULLIF({week_count_campaign_period_min}, 0)"
+      title: "Average Sales Campaign Period Reference Store"
+
+    - name: avg_sales_past_year_reference
+      type: number
+      sql: "{sum_sales_past_year_reference} / NULLIF(MIN(week_count_past_year), 0)"
+      title: "Average Sales Past Year Reference Store"
+
+    - name: avg_sales_past_quarter_reference
+      type: number
+      sql: "{sum_sales_quarter_reference} / NULLIF(MIN(week_count_quarter), 0)"
+      title: "Average Sales Past Quarter Reference Store"
+
+    - name: avg_sales_week_before_reference
+      type: number
+      sql: "{sum_sales_week_before_reference} / NULLIF(MIN(week_count_week_before), 0)"
+      title: "Average Sales Week Before Reference Store"
+
+### Reference Store Impact Measures (percentages)
+    - name: impact_campaign_vs_year_reference
+      type: number
+      sql: "({avg_sales_campaign_period_reference} / NULLIF({avg_sales_past_year_reference}, 0)) * 100"
+      title: "Campaign vs Past Year Impact Reference Store (%)"
+
+    - name: impact_campaign_vs_quarter_reference
+      type: number
+      sql: "({avg_sales_campaign_period_reference} / NULLIF({avg_sales_past_quarter_reference}, 0)) * 100"
+      title: "Campaign vs Past Quarter Impact Reference Store (%)"
+
+    - name: impact_campaign_vs_week_before_reference
+      type: number
+      sql: "({avg_sales_campaign_period_reference} / NULLIF({avg_sales_week_before_reference}, 0)) * 100"
+      title: "Campaign vs Week Before Impact Reference Store (%)"
+
+
+    ### C.A.P Store Baseline Measures (100%)
+    - name: baseline_past_year_cap
+      type: number
+      sql: "({avg_sales_past_year_cap} / NULLIF({avg_sales_past_year_cap}, 0)) * 100"
+      title: "Past Year Baseline C.A.P Store (%)"
+
+    - name: baseline_past_quarter_cap
+      type: number
+      sql: "({avg_sales_past_quarter_cap} / NULLIF({avg_sales_past_quarter_cap}, 0)) * 100"
+      title: "Past Quarter Baseline C.A.P Store (%)"
+
+    - name: baseline_week_before_cap
+      type: number
+      sql: "({avg_sales_week_before_cap} / NULLIF({avg_sales_week_before_cap}, 0)) * 100"
+      title: "Week Before Baseline C.A.P Store (%)"
+
+
+    ### Reference Store Baseline Measures (100%)
+    - name: baseline_past_year_reference
+      type: number
+      sql: "({avg_sales_past_year_reference} / NULLIF({avg_sales_past_year_reference}, 0)) * 100"
+      title: "Past Year Baseline Reference Store (%)"
+
+    - name: baseline_past_quarter_reference
+      type: number
+      sql: "({avg_sales_past_quarter_reference} / NULLIF({avg_sales_past_quarter_reference}, 0)) * 100"
+      title: "Past Quarter Baseline Reference Store (%)"
+
+    - name: baseline_week_before_reference
+      type: number
+      sql: "({avg_sales_week_before_reference} / NULLIF({avg_sales_week_before_reference}, 0)) * 100"
+      title: "Week Before Baseline Reference Store (%)"
+
+
+
+    
+    ##refresh_key:
+      ##every: 12 hour
+
+
+    

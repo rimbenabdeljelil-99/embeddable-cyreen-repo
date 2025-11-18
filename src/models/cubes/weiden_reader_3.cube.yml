@@ -1,0 +1,115 @@
+cubes:
+  - name: weiden_reader_3
+    title: Weiden Reader Three
+    sql: >
+      WITH journeys AS (
+        SELECT
+          data_day,
+          customer_journey_number,
+          ARRAY_AGG(id_area_reader ORDER BY timestamp ASC) AS ordered_readers
+        FROM vw_weiden_all_customer_journeys_30
+        GROUP BY data_day, customer_journey_number
+      ),
+
+      filtered_journeys AS (
+        SELECT *
+        FROM journeys
+        WHERE array_length(ordered_readers, 1) > 1
+          AND ordered_readers[1] = 101
+          AND ordered_readers[array_length(ordered_readers, 1)] = 101
+          AND 103 = ANY(ordered_readers)
+      ),
+
+      transitions AS (
+        SELECT
+          customer_journey_number,
+          data_day,
+          ordered_readers,
+          -- Position of the first 103
+          (
+            SELECT i
+            FROM generate_series(1, array_length(ordered_readers, 1) - 1) AS i
+            WHERE ordered_readers[i] = 103
+            LIMIT 1
+          ) AS first_103_position,
+          -- Area immediately following the first 103
+          (
+            SELECT ordered_readers[i + 1]
+            FROM generate_series(1, array_length(ordered_readers, 1) - 1) AS i
+            WHERE ordered_readers[i] = 103
+            LIMIT 1
+          ) AS transition_to
+        FROM filtered_journeys
+      )
+
+      SELECT
+        CONCAT('103 → ', transition_to) AS transition,
+        COUNT(*) AS frequency
+      FROM transitions
+      WHERE transition_to IS NOT NULL
+      GROUP BY transition_to
+      ORDER BY frequency DESC
+
+    data_source: my-db2
+
+
+    dimensions:
+      - name: transition
+        sql: transition
+        type: string
+
+      - name: frequency
+        sql: frequency
+        type: number
+
+
+    measures:
+      - name: total_frequency
+        sql: frequency
+        type: sum
+        title: "Total Frequency"
+
+      - name: total_frequency_103_101
+        sql: frequency
+        type: sum
+        title: "Total Frequency 103 101"
+        filters:
+          - sql: "{CUBE}.transition = '103 → 101'"
+
+
+      - name: total_frequency_103_103
+        sql: frequency
+        type: sum
+        title: "Total Frequency 103 103"
+        filters:
+          - sql: "{CUBE}.transition = '103 → 103'"
+
+
+      - name: total_frequency_103_102
+        sql: frequency
+        type: sum
+        title: "Total Frequency 103 102"
+        filters:
+          - sql: "{CUBE}.transition = '103 → 102'"
+
+
+      - name: pct_103_103
+        type: number
+        sql: "100.0 * {total_frequency_103_103} / NULLIF({total_frequency},0)"
+        format: "percent"
+        title: "% 103 -> 103"
+
+
+      - name: pct_103_102
+        type: number
+        sql: "100.0 * {total_frequency_103_102} / NULLIF({total_frequency},0)"
+        format: "percent"
+        title: "% 103 -> 102"
+
+      - name: pct_103_101
+        type: number
+        sql: "100.0 * {total_frequency_103_101} / NULLIF({total_frequency},0)"
+        format: "percent"
+        title: "% 103 -> 101"
+        
+

@@ -1,0 +1,151 @@
+cubes:
+  
+  - name: overview_screens
+    title: Overview Screens 
+    sql: >  # Defines the underlying query
+      SELECT
+          overview.id_store,
+          overview.number_root,
+          MAX(overview.installed_screens) AS max_installed_screens,
+          MAX(overview.installed_trolleys) AS max_installed_trolleys,
+          MAX(overview.installed_baskets) AS max_installed_baskets
+      FROM public.Overview 
+      {% if COMPILE_CONTEXT.securityContext.number_root %}  
+        WHERE number_root = '{ COMPILE_CONTEXT.securityContext.number_root }'
+      {% endif %}
+      GROUP BY
+          overview.id_store,
+          overview.number_root
+    refresh_key:
+      every: 12 hours
+    data_source: my-db
+
+    dimensions:
+      - name: id_overview
+        sql: id_overview
+        type: number
+
+      - name: name_store
+        sql: name_store
+        type: string
+
+      - name: id_store
+        sql: id_store
+        type: number
+
+      - name: id_company
+        sql: id_company
+        type: number
+
+      - name: id_campaign
+        sql: id_campaign
+        type: number
+
+      - name: hour
+        sql: hour
+        type: number
+
+      - name: date
+        sql: date
+        type: time
+
+      - name: zip_code
+        sql: zip_code
+        type: string
+
+      - name: latitude
+        sql: latitude
+        type: number
+
+      - name: longitude
+        sql: longitude
+        type: number
+
+      - name: name_campaign
+        sql: name_campaign
+        type: string
+
+      - name: start_date
+        sql: start_date
+        type: time
+
+      - name: end_date
+        sql: end_date
+        type: time
+
+      - name: impressions
+        sql: impressions
+        type: number
+
+      - name: installed_trolleys
+        sql: installed_trolleys
+        type: number
+
+      - name: max_installed_screens
+        sql: max_installed_screens
+        type: number
+
+      - name: installed_screens
+        sql: installed_screens
+        type: number
+
+      - name: timestamp
+        sql: timestamp
+        type: time
+
+      - name: installed_baskets
+        sql: installed_baskets
+        type: number
+
+      - name: last_edit
+        sql: last_edit
+        type: time
+
+      - name: timestamp_last_edit
+        sql: timestamp_last_edit
+        type: time
+
+      - name: batch_number
+        sql: batch_number
+        type: string
+
+      - name: number_root
+        sql: number_root
+        type: number
+
+
+
+
+
+    measures:
+
+
+      - name: smart_stores
+        type: number
+        sql: "COUNT(DISTINCT id_store)"
+        title: "Smart Stores"
+
+
+      - name: smart_screens
+        type: sum
+        sql: max_installed_screens
+        title: "Smart Screens"
+        
+
+      - name: smart_trolleys
+        type: sum
+        sql: max_installed_trolleys
+        title: "Smart Trolleys"
+
+
+      - name: smart_baskets
+        type: sum
+        sql: max_installed_baskets
+        title: "Smart Baskets"
+
+      - name: smart_devices
+        type: number
+        sql: "COALESCE({smart_baskets}, 0) + COALESCE({smart_trolleys}, 0)"
+        title: "Smart Devices"
+
+    

@@ -1,0 +1,111 @@
+cubes :
+
+  - name: weiden_by_areas
+    title: Weiden By Areas
+    sql: >
+      SELECT
+        data_day,
+        customer_journey_number,
+        ARRAY_AGG(DISTINCT id_area_reader ORDER BY id_area_reader) AS readers_visited,
+        CASE
+          WHEN ARRAY[101] = ARRAY_AGG(DISTINCT id_area_reader ORDER BY id_area_reader) THEN '101 only'
+          WHEN ARRAY[102] = ARRAY_AGG(DISTINCT id_area_reader ORDER BY id_area_reader) THEN '102 only'
+          WHEN ARRAY[103] = ARRAY_AGG(DISTINCT id_area_reader ORDER BY id_area_reader) THEN '103 only'
+          WHEN ARRAY[101,102] = ARRAY_AGG(DISTINCT id_area_reader ORDER BY id_area_reader) THEN '101 & 102'
+          WHEN ARRAY[101,103] = ARRAY_AGG(DISTINCT id_area_reader ORDER BY id_area_reader) THEN '101 & 103'
+          WHEN ARRAY[102,103] = ARRAY_AGG(DISTINCT id_area_reader ORDER BY id_area_reader) THEN '102 & 103'
+          WHEN ARRAY[101,102,103] = ARRAY_AGG(DISTINCT id_area_reader ORDER BY id_area_reader) THEN '101 & 102 & 103'
+          ELSE 'Other combinations'
+        END AS journey_pattern
+      FROM vw_weiden_all_customer_journeys_30
+      GROUP BY data_day, customer_journey_number
+
+
+    data_source: my-db2
+    dimensions:
+      - name: data_day
+        sql: data_day
+        type: time
+
+      - name: customer_journey_number
+        sql: customer_journey_number
+        type: number
+
+      - name: readers_visited
+        sql: readers_visited
+        type: string
+
+      - name: journey_pattern
+        sql: journey_pattern
+        type: string
+
+      - name: week
+        type: number
+        sql: "EXTRACT(WEEK FROM data_day)"
+
+
+      - name: day_only
+        sql: TO_CHAR({data_day}, 'YYYY-MM-DD')
+        type: time
+    measures:
+      - name: total_journeys
+        type: count
+        sql: customer_journey_number
+        title: "Number of Journeys"
+
+
+      - name: total_101_journeys
+        type: count
+        sql: customer_journey_number
+        title: "Number of Journeys 101"
+        filters:
+          - sql: "{CUBE}.journey_pattern = '101 only'"
+
+
+      - name: total_102_journeys
+        type: count
+        sql: customer_journey_number
+        title: "Number of Journeys 102"
+        filters:
+          - sql: "{CUBE}.journey_pattern = '102 only'"
+
+
+      - name: total_103_journeys
+        type: count
+        sql: customer_journey_number
+        title: "Number of Journeys 103"
+        filters:
+          - sql: "{CUBE}.journey_pattern = '103 only'"
+
+
+      - name: total_101_102_journeys
+        type: count
+        sql: customer_journey_number
+        title: "Number of Journeys 101 & 102"
+        filters:
+          - sql: "{CUBE}.journey_pattern = '101 & 102'"
+
+
+      - name: total_101_103_journeys
+        type: count
+        sql: customer_journey_number
+        title: "Number of Journeys 101 & 103"
+        filters:
+          - sql: "{CUBE}.journey_pattern = '101 & 103'"
+
+
+      - name: total_102_103_journeys
+        type: count
+        sql: customer_journey_number
+        title: "Number of Journeys 102 & 103"
+        filters:
+          - sql: "{CUBE}.journey_pattern = '102 & 103'"
+
+
+      - name: total_101_102_103_journeys
+        type: count
+        sql: customer_journey_number
+        title: "Number of Journeys 101 & 102 & 103"
+        filters:
+          - sql: "{CUBE}.journey_pattern = '101 & 102 & 103'"
+        

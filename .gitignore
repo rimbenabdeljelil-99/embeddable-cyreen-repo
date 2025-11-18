@@ -1,0 +1,40 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+.embeddable-build
+.embeddable-dev-build
+
+# cube
+.env
+.cubestore
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# build files
+embeddable-entry-point.jsx
+.embeddable-dev-build
+
+# license report file
+license-report.csv
+
+# misc
+csvjson.json

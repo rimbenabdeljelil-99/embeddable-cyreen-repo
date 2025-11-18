@@ -1,0 +1,35 @@
+cubes:
+  - name: weiden_missing_trolleys
+    title: Weiden Missing Trolleys
+    sql: >
+      SELECT 
+        number_tag,
+        last_reader,
+        time_since_last_seen::text AS time_since_last_seen,  -- cast to string
+        status
+      FROM vw_weiden_missed_trollyes
+    data_source: my-db2
+
+    dimensions:
+      - name: number_tag
+        sql: number_tag
+        type: string
+
+      - name: last_reader
+        sql: last_reader
+        type: string
+
+      - name: time_since_last_seen
+        sql: time_since_last_seen
+        type: string   # now safe, JS will see a proper string
+
+      - name: status
+        sql: status
+        type: string
+
+
+    measures:
+      - name: weiden_missing_trolleys
+        type: count
+        sql: number_tag
+        title: Missing Trolleys

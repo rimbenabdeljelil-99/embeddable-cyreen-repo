@@ -1,0 +1,17 @@
+- name: A-United States
+  clientContext:
+    language: 'en'
+ 
+- name: France
+  clientContext:
+    language: 'fr'
+
+
+- name: Germany
+  clientContext:
+    language: 'de'
+
+- name: Italy
+  clientContext:
+    language: 'it'
+

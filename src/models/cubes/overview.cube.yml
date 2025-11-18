@@ -1,0 +1,340 @@
+cubes:
+  
+  - name: overview
+    title: Overview
+    sql: >
+     SELECT * 
+      FROM public.Overview 
+      {% if COMPILE_CONTEXT.securityContext.number_root %}  
+        WHERE number_root = '{ COMPILE_CONTEXT.securityContext.number_root }'
+      {% endif %}
+    data_source: my-db
+
+    dimensions:
+      - name: id_overview
+        sql: id_overview
+        type: number
+
+      - name: name_store
+        sql: name_store
+        type: string
+
+      - name: id_store
+        sql: id_store
+        type: number
+
+      - name: id_company
+        sql: id_company
+        type: number
+
+      - name: id_campaign
+        sql: id_campaign
+        type: number
+
+
+      - name: hour
+        sql: hour
+        type: number
+
+      - name: date
+        sql: date
+        type: time
+
+      - name: zip_code
+        sql: zip_code
+        type: string
+
+      - name: latitude
+        sql: latitude
+        type: number
+
+      - name: longitude
+        sql: longitude
+        type: number
+
+      - name: name_campaign
+        sql: name_campaign
+        type: string
+
+      - name: start_date
+        sql: start_date
+        type: time
+
+      - name: end_date
+        sql: end_date
+        type: time
+
+      - name: impressions
+        sql: impressions
+        type: number
+
+      - name: installed_trolleys
+        sql: installed_trolleys
+        type: number
+
+      - name: installed_screens
+        sql: installed_screens
+        type: number
+
+      - name: timestamp
+        sql: timestamp
+        type: time
+
+      - name: installed_baskets
+        sql: installed_baskets
+        type: number
+
+      - name: last_edit
+        sql: last_edit
+        type: time
+
+      - name: timestamp_last_edit
+        sql: timestamp_last_edit
+        type: time
+
+      - name: batch_number
+        sql: batch_number
+        type: string
+
+      - name: number_root
+        sql: number_root
+        type: number
+
+      - name : status
+        type: string
+        sql: |
+          CASE
+            WHEN CURRENT_DATE < CAST({overview}.start_date AS DATE) THEN 'Scheduled'
+            WHEN CURRENT_DATE > CAST({overview}.end_date AS DATE) THEN 'Completed'
+            ELSE 'Live'
+          END
+        title: "Status" 
+
+      - name: dow
+        sql: CASE EXTRACT(DOW FROM date::DATE)
+            WHEN 0 THEN 'Sunday'
+            WHEN 1 THEN 'Monday'
+            WHEN 2 THEN 'Tuesday'
+            WHEN 3 THEN 'Wednesday'
+            WHEN 4 THEN 'Thursday'
+            WHEN 5 THEN 'Friday'
+            WHEN 6 THEN 'Saturday'
+          END
+        type: number
+
+      - name: month1
+        sql: TRIM(TO_CHAR(date::DATE, 'Month')) || ' ' || EXTRACT(YEAR FROM date::DATE)
+        type: string
+
+
+      - name: date_only
+        sql: TO_CHAR(timestamp, 'YYYY-MM-DD')
+        type: string
+
+
+
+    measures:
+
+
+      - name: smart_stores
+        type: number
+        sql: "COUNT(DISTINCT id_store)"
+        title: "Smart Stores"
+
+      - name: total_campaigns
+        type: number
+        sql: "COUNT(DISTINCT id_campaign)"
+        title: "Total Campaigns"
+
+      - name: total_impressions_despar
+        type: sum
+        sql: "overview.impressions"
+        title: "Total Impressions"
+
+      - name: total_impressions_round_despar
+        type: number
+        sql: "ROUND({total_impressions_despar},0)"
+        title: "Total Impressions Round Despar"
+
+      - name: average_daily_impressions_despar
+        type: number
+        sql: "{total_impressions_despar} / COUNT(DISTINCT date)"
+        title: "Average Daily Impressions Despar"
+      
+
+      - name: average_daily_impressions_round_despar
+        type: number
+        sql: "ROUND({average_daily_impressions_despar},0)"
+        title: "Average Daily Impressions Round Despar"
+        
+
+
+      - name: total_impressions
+        type: sum
+        sql: "1.5 * overview.impressions"
+        title: "Total Impressions"
+
+      - name: total_impressions_round
+        type: number
+        sql: "ROUND({total_impressions},0)"
+        title: "Total Impressions Round"
+      
+      - name: average_daily_impressions
+        type: number
+        sql: "{total_impressions} / COUNT(DISTINCT date)"
+        title: "Average Daily Impressions"
+      
+
+      - name: average_daily_impressions_round
+        type: number
+        sql: "ROUND({average_daily_impressions},0)"
+        title: "Average Daily Impressions Round"
+      
+
+      - name: total_installed_screens
+        type: number
+        sql: "SUM((SELECT MAX(installed_screens) FROM public.overview o2 WHERE o2.id_store = overview.id_store GROUP BY o2.id_store))"
+        title: "Total Installed Screens"
+
+      - name: smart_screens
+        type: number
+        sql: |
+          (
+            SELECT SUM(installed_screens)
+            FROM (
+              SELECT
+                overview.id_store,
+                overview.installed_screens,
+                overview.number_root
+               
+            FROM public.overview AS overview
+            WHERE
+              overview.number_root = {number_root}
+              AND (
+                overview.id_store <> '1'
+                OR overview.id_store IS NULL
+            )
+            GROUP BY
+              overview.id_store,
+              overview.installed_screens,
+              overview.number_root
+             
+          ) AS filtered_per_store
+          )
+        title: "Smart Screens"
+
+
+
+      - name : zip_code_measure
+        sql: "STRING_AGG(DISTINCT zip_code, ', ')"
+        type: string
+        title: "Zip Code Measure"
+
+
+      - name: month_sort
+        sql: |
+          STRING_AGG(
+            DISTINCT 
+            (EXTRACT(YEAR FROM date::DATE)::INT * 100 + EXTRACT(MONTH FROM date::DATE)::INT)::TEXT, 
+            ', '
+          )
+        type: string
+        title: "month sort"
+
+      - name: weekday_agg_string
+        sql: |
+          STRING_AGG(
+            DISTINCT 
+            CASE 
+              WHEN EXTRACT(DOW FROM date::DATE) = 0 THEN '7' 
+              ELSE CAST(EXTRACT(DOW FROM date::DATE) AS VARCHAR) 
+            END, 
+            ', '
+          )
+        type: string
+        title: "Weekdays (Aggregated)"
+
+
+
+      - name: date_min
+        sql: "{date_only}"
+        type: min
+        title : Start Date
+
+
+
+      - name: date_max
+        sql: "{date_only}"
+        type: max
+        title : Latest Date
+
+
+
+      - name : name_campaign_measure
+        sql: "STRING_AGG(DISTINCT name_campaign, ', ')"
+        type: string
+        title: "Name Campaign Measure"
+
+
+      - name: live_campaigns
+        type: number
+        sql: |
+          COUNT(DISTINCT 
+            CASE 
+              WHEN CURRENT_DATE BETWEEN CAST({overview}.start_date AS DATE) AND CAST({overview}.end_date AS DATE) 
+              THEN {overview}.id_campaign 
+              ELSE NULL 
+            END
+          )
+        title: "Live Campaigns"
+
+
+      - name: completed_campaigns
+        type: number
+        sql: |
+          COUNT(DISTINCT 
+            CASE 
+              WHEN CURRENT_DATE > CAST({overview}.end_date AS DATE) 
+              THEN {overview}.id_campaign 
+              ELSE NULL 
+            END
+          )
+        title: "Completed Campaigns"
+
+
+      - name: planned_campaigns
+        type: number
+        sql: |
+          COUNT(DISTINCT 
+            CASE 
+              WHEN CURRENT_DATE < CAST({overview}.start_date AS DATE) 
+              THEN {overview}.id_campaign 
+              ELSE NULL 
+            END
+          )
+        title: "Planned Campaigns"
+
+
+
+        
+
+
+      - name: total_impressions_round_2
+        type: number
+        sql: "ROUND({total_impressions},0)"
+        title: "Total Impressions Round 2"
+
+    refresh_key:
+      every: 12 hours
+
+    
+
+
+        
+
+
+
+
+      
+
+      

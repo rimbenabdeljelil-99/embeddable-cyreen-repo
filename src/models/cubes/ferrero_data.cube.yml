@@ -1,0 +1,641 @@
+cubes:
+  # Cube 1: Receipt-level totals (safe without dupplicates)
+  - name: receipts
+    sql: |
+      SELECT *
+      FROM receipt_headers
+      WHERE number_checkout NOT IN (114, 115)
+        AND EXISTS (
+          SELECT 1
+          FROM ferrero_receipts fr
+          WHERE fr.number_receipt_identifier = receipt_headers.number_receipt_identifier
+            AND receipt_headers.timestamp IS NOT NULL
+        )
+    data_source: my-db2
+
+
+
+    dimensions:
+      - name: id_receipt_header
+        type: string
+        sql: id_receipt_header
+        primary_key: true
+
+      - name: number_receipt_identifier
+        sql: number_receipt_identifier
+        type: number
+
+      - name: id_store
+        sql: id_store
+        type: number
+
+      - name: timestamp
+        sql: timestamp
+        type: time
+
+      - name: id_company
+        sql: id_company
+        type: string
+
+      - name: number_checkout
+        sql: number_checkout
+        type: string
+
+      - name: number_tag
+        sql: number_tag
+        type: string
+
+    measures:
+      - name: count
+        type: count
+      - name: total_sales
+        type: sum
+        sql: total_count
+        title: Total Sales
+      - name: frequency
+        type: count_distinct
+        sql: number_receipt_identifier
+        title: Total Frequency
+      - name: total_revenue
+        type: sum
+        sql: total_value
+        title: Total Revenue
+      - name: average_sales_complete_purchase
+        type: number
+        sql: "sum(total_count)/ COUNT(DISTINCT {receipts}.number_receipt_identifier)"
+        title: Average Sales (Complete Purchase)
+      - name: average_revenue_complete_purchase
+        type: number
+        sql: "sum(total_value)/ COUNT(DISTINCT {receipts}.number_receipt_identifier)"
+        title: Average Revenue (Complete Purchase)
+    
+
+    joins:
+      - name: ferrero_data
+        sql: "{CUBE}.number_receipt_identifier = {ferrero_data}.number_receipt_identifier"
+        relationship: one_to_many
+
+    pre_aggregations:
+    - name: product_sales_revenue_combined
+      type: rollup
+      measures:
+        - ferrero_data.average_sales_count
+        - receipts.average_sales_complete_purchase
+        - ferrero_data.average_revenue_value
+        - receipts.frequency
+        - receipts.average_revenue_complete_purchase
+        - receipts.total_sales
+        - receipts.total_revenue
+      dimensions:
+        - ferrero_data.name_area
+        - ferrero_data.name_division
+        - ferrero_data.name_category
+        - ferrero_data.kategorie
+        - ferrero_data.produktname
+      refresh_key:
+        every: 1 week
+
+    
+
+    - name: product_sales_revenue_combined_without_wg
+      type: rollup
+      measures:
+        - ferrero_data.average_sales_count
+        - receipts.average_sales_complete_purchase
+        - ferrero_data.average_revenue_value
+        - receipts.frequency
+        - receipts.average_revenue_complete_purchase
+        - receipts.total_sales
+        - receipts.total_revenue
+      dimensions:
+        - ferrero_data.name_area
+        - ferrero_data.name_division
+        - ferrero_data.kategorie
+        - ferrero_data.produktname
+      refresh_key:
+        every: 1 week
+
+
+    - name: product_sales_revenue_combined_without_wg_kategorie
+      type: rollup
+      measures:
+        - ferrero_data.average_sales_count
+        - receipts.average_sales_complete_purchase
+        - ferrero_data.average_revenue_value
+        - receipts.frequency
+        - receipts.average_revenue_complete_purchase
+        - receipts.total_sales
+        - receipts.total_revenue
+      dimensions:
+        - ferrero_data.name_area
+        - ferrero_data.name_division
+        - ferrero_data.produktname
+      refresh_key:
+        every: 1 week
+
+    - name: product_sales_revenue_combined_without_wg_product_name
+      type: rollup
+      measures:
+        - ferrero_data.average_sales_count
+        - receipts.average_sales_complete_purchase
+        - ferrero_data.average_revenue_value
+        - receipts.frequency
+        - receipts.average_revenue_complete_purchase
+        - receipts.total_sales
+        - receipts.total_revenue
+      dimensions:
+        - ferrero_data.name_area
+        - ferrero_data.name_division
+        - ferrero_data.kategorie
+      refresh_key:
+        every: 1 week
+
+
+    
+
+    - name: product_sales_revenue_combined_without_kategorie
+      type: rollup
+      measures:
+        - ferrero_data.average_sales_count
+        - receipts.average_sales_complete_purchase
+        - ferrero_data.average_revenue_value
+        - receipts.frequency
+        - receipts.average_revenue_complete_purchase
+        - receipts.total_sales
+        - receipts.total_revenue
+      dimensions:
+        - ferrero_data.name_area
+        - ferrero_data.name_division
+        - ferrero_data.name_category
+        - ferrero_data.produktname
+      refresh_key:
+        every: 1 week
+
+    - name: product_sales_revenue_combined_without_produktname
+      type: rollup
+      measures:
+        - ferrero_data.average_sales_count
+        - receipts.average_sales_complete_purchase
+        - ferrero_data.average_revenue_value
+        - receipts.frequency
+        - receipts.average_revenue_complete_purchase
+        - receipts.total_sales
+        - receipts.total_revenue
+      dimensions:
+        - ferrero_data.name_area
+        - ferrero_data.name_division
+        - ferrero_data.name_category
+        - ferrero_data.kategorie
+      refresh_key:
+        every: 1 week
+
+
+    
+
+    - name: product_sales_revenue_combined_number_checkout
+      type: rollup
+      measures:
+        - ferrero_data.average_sales_count
+        - receipts.average_sales_complete_purchase
+        - ferrero_data.average_revenue_value
+        - receipts.frequency
+        - receipts.average_revenue_complete_purchase
+        - receipts.total_sales
+        - receipts.total_revenue
+      dimensions:
+        - ferrero_data.name_area
+        - ferrero_data.name_division
+        - ferrero_data.name_category
+        - ferrero_data.kategorie
+        - ferrero_data.produktname
+        - receipts.number_checkout
+      refresh_key:
+        every: 1 week
+
+
+    - name: product_sales_revenue_combined_week
+      type: rollup
+      measures:
+        - ferrero_data.average_sales_count
+        - receipts.average_sales_complete_purchase
+        - ferrero_data.average_revenue_value
+        - receipts.frequency
+        - receipts.average_revenue_complete_purchase
+        - receipts.total_sales
+        - receipts.total_revenue
+      dimensions:
+        - ferrero_data.name_area
+        - ferrero_data.name_division
+        - ferrero_data.name_category
+        - ferrero_data.kategorie
+        - ferrero_data.produktname
+        - ferrero_data.week
+      refresh_key:
+        every: 1 week
+
+
+    - name: hour_sales_complete
+      type: rollup
+      dimensions:
+        - ferrero_data.hour
+      measures:
+        - receipts.average_sales_complete_purchase
+      refresh_key:
+        every: 1 week
+
+    - name: day_only_sales_complete
+      type: rollup
+      dimensions:
+        - ferrero_data.day_only
+      measures:
+        - receipts.average_sales_complete_purchase
+      refresh_key:
+        every: 1 week
+
+    - name: week_sales_complete
+      type: rollup
+      dimensions:
+        - ferrero_data.week
+      measures:
+        - receipts.average_sales_complete_purchase
+      refresh_key:
+        every: 1 week
+
+
+    - name: month_number_sales_complete
+      type: rollup
+      dimensions:
+        - ferrero_data.month_number
+      measures:
+        - receipts.average_sales_complete_purchase
+      refresh_key:
+        every: 1 week
+
+
+    - name: hour_revenue_complete
+      type: rollup
+      dimensions:
+        - ferrero_data.hour
+      measures:
+        - receipts.average_revenue_complete_purchase
+      refresh_key:
+        every: 1 week
+
+    - name: day_only_revenue_complete
+      type: rollup
+      dimensions:
+        - ferrero_data.day_only
+      measures:
+        - receipts.average_revenue_complete_purchase
+      refresh_key:
+        every: 1 week
+
+    - name: week_revenue_complete
+      type: rollup
+      dimensions:
+        - ferrero_data.week
+      measures:
+        - receipts.average_revenue_complete_purchase
+      refresh_key:
+        every: 1 week
+
+
+    - name: month_number_revenue_complete
+      type: rollup
+      dimensions:
+        - ferrero_data.month_number
+      measures:
+        - receipts.average_revenue_complete_purchase
+      refresh_key:
+        every: 1 week
+
+
+    - name: hour_frequency_complete
+      type: rollup
+      dimensions:
+        - ferrero_data.hour
+      measures:
+        - receipts.frequency
+      refresh_key:
+        every: 1 week
+
+    - name: day_only_frequency_complete
+      type: rollup
+      dimensions:
+        - ferrero_data.day_only
+      measures:
+        - receipts.frequency
+      refresh_key:
+        every: 1 week
+
+    - name: week_frequency_complete
+      type: rollup
+      dimensions:
+        - ferrero_data.week
+      measures:
+        - receipts.frequency
+      refresh_key:
+        every: 1 week
+
+
+    - name: month_number_frequency_complete
+      type: rollup
+      dimensions:
+        - ferrero_data.month_number
+      measures:
+        - receipts.frequency
+      refresh_key:
+        every: 1 week
+
+
+    - name: hour_total_sales
+      type: rollup
+      dimensions:
+        - ferrero_data.hour
+      measures:
+        - receipts.total_sales
+      refresh_key:
+        every: 1 week
+
+    - name: day_only_total_sales
+      type: rollup
+      dimensions:
+        - ferrero_data.day_only
+      measures:
+        - receipts.total_sales
+      refresh_key:
+        every: 1 week
+
+    - name: week_total_sales
+      type: rollup
+      dimensions:
+        - ferrero_data.week
+      measures:
+        - receipts.total_sales
+      refresh_key:
+        every: 1 week
+
+
+    - name: month_number_total_sales
+      type: rollup
+      dimensions:
+        - ferrero_data.month_number
+      measures:
+        - receipts.total_sales
+      refresh_key:
+        every: 1 week
+
+
+    - name: hour_total_revenue
+      type: rollup
+      dimensions:
+        - ferrero_data.hour
+      measures:
+        - receipts.total_revenue
+      refresh_key:
+        every: 1 week
+
+    - name: day_only_total_revenue
+      type: rollup
+      dimensions:
+        - ferrero_data.day_only
+      measures:
+        - receipts.total_revenue
+      refresh_key:
+        every: 1 week
+
+    - name: week_total_revenue
+      type: rollup
+      dimensions:
+        - ferrero_data.week
+      measures:
+        - receipts.total_revenue
+      refresh_key:
+        every: 1 week
+
+
+    - name: month_number_total_revenue
+      type: rollup
+      dimensions:
+        - ferrero_data.month_number
+      measures:
+        - receipts.total_revenue
+      refresh_key:
+        every: 1 week
+
+    
+
+
+
+  # Cube 2: Product/tag-level details
+  - name: ferrero_data
+    data_source: my-db2
+    sql: |-
+      SELECT
+        fr.number_receipt_identifier,
+        fr.description,
+        fr.gtin,
+        fr.value,
+        fr.count,
+        rh.timestamp,
+        fp.ferrero_produktgruppe,
+        fp.kategorie,
+        fp.produktname,
+        fw.name_area,
+        fw.name_division,
+        fw.name_category,
+        tt.name AS device_name
+      FROM ferrero_receipts fr
+      LEFT JOIN ferrero_products fp ON fp.ean_code = fr.gtin
+      LEFT JOIN categories fw ON fw.number_category = fr.number_category
+      LEFT JOIN receipt_headers rh ON rh.number_receipt_identifier = fr.number_receipt_identifier
+      LEFT JOIN tags t ON t.number_tag_area = rh.number_tag
+      LEFT JOIN tag_types tt ON tt.id_tag_type = t.id_tag_type
+
+    dimensions:
+      - name: id_receipt
+        type: string
+        sql: id_receipt
+        primary_key: true
+        
+      - name: number_receipt_identifier
+        sql: number_receipt_identifier
+        type: number
+
+      - name: description
+        sql: description
+        type: string
+
+      - name: gtin
+        sql: gtin
+        type: number
+
+      - name: ferrero_produktgruppe
+        sql: ferrero_produktgruppe
+        type: string
+
+      - name: kategorie
+        sql: kategorie
+        type: string
+        title: Ferrero Kategorien
+
+      - name: produktname
+        sql: produktname
+        type: string
+        title: Ferrero Produkt
+
+      - name: device_name
+        sql: device_name
+        type: string
+
+      - name: name_area
+        sql: name_area
+        type: string
+        title: Hauptwarengruppe
+
+      - name: name_division
+        sql: name_division
+        type: string
+        title: Oberwarengruppe
+
+      - name: name_category
+        sql: name_category
+        type: string
+        title: Warengruppe
+
+      - name: count
+        sql: count
+        type: number
+
+      - name: timestamp
+        sql: timestamp
+        type: time
+
+      
+      - name: hour
+        type: number
+        sql: "EXTRACT(HOUR FROM {ferrero_data}.timestamp::timestamp)"
+        title: Hour
+
+      - name: month_number
+        sql: EXTRACT(MONTH FROM {ferrero_data}.timestamp::timestamp)
+        type: number
+
+# Date (formatted as YYYY-MM-DD)
+      - name: day_only
+        sql: TO_CHAR({ferrero_data}.timestamp::timestamp, 'YYYY-MM-DD')
+        type: string
+
+      - name: week
+        type: number
+        sql: "EXTRACT(WEEK FROM {ferrero_data}.timestamp::timestamp)"
+        title: Week
+
+    measures:
+      - name: total_count
+        type: sum
+        sql: total_count
+
+      - name: average_revenue_value
+        type: number
+        sql: (SUM(value)) * 1.0 / COUNT(DISTINCT {ferrero_data}.number_receipt_identifier)
+        title: Average Revenue (Known Products)
+
+      - name: average_sales_count
+        type: number
+        sql: SUM(count) * 1.0 / COUNT(DISTINCT {ferrero_data}.number_receipt_identifier)
+        title: Average Sales (Known Products)
+
+    
+
+
+
+    
+    pre_aggregations:
+    - name: dropdown_data
+      type: rollup
+      dimensions:
+        - ferrero_data.name_area
+        - ferrero_data.name_division
+        - ferrero_data.name_category
+        - ferrero_data.kategorie
+        - ferrero_data.produktname
+        - ferrero_data.week
+      refresh_key:
+        every: 1 week
+
+
+    - name: hour_sales_known
+      type: rollup
+      dimensions:
+        - ferrero_data.hour
+      measures:
+        - ferrero_data.average_sales_count
+      refresh_key:
+        every: 1 week
+
+    - name: day_only_sales_known
+      type: rollup
+      dimensions:
+        - ferrero_data.day_only
+      measures:
+        - ferrero_data.average_sales_count
+      refresh_key:
+        every: 1 week
+
+    - name: week_sales_known
+      type: rollup
+      dimensions:
+        - ferrero_data.week
+      measures:
+        - ferrero_data.average_sales_count
+      refresh_key:
+        every: 1 week
+
+
+    - name: month_number_sales_known
+      type: rollup
+      dimensions:
+        - ferrero_data.month_number
+      measures:
+        - ferrero_data.average_sales_count
+      refresh_key:
+        every: 1 week
+
+
+    - name: hour_revenue_known
+      type: rollup
+      dimensions:
+        - ferrero_data.hour
+      measures:
+        - ferrero_data.average_revenue_value
+      refresh_key:
+        every: 1 week
+
+    - name: day_only_revenue_known
+      type: rollup
+      dimensions:
+        - ferrero_data.day_only
+      measures:
+        - ferrero_data.average_revenue_value
+      refresh_key:
+        every: 1 week
+
+    - name: week_revenue_known
+      type: rollup
+      dimensions:
+        - ferrero_data.week
+      measures:
+        - ferrero_data.average_revenue_value
+      refresh_key:
+        every: 1 week
+
+
+    - name: month_number_revenue_known
+      type: rollup
+      dimensions:
+        - ferrero_data.month_number
+      measures:
+        - ferrero_data.average_revenue_value
+      refresh_key:
+        every: 1 week

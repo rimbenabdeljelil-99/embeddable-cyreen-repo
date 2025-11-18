@@ -1,0 +1,161 @@
+{
+  "name": "vanilla-components",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "embeddable:build": "embeddable build",
+    "embeddable:push": "embeddable push",
+    "embeddable:login": "embeddable login",
+    "embeddable:dev": "cross-env NODE_OPTIONS='--max-old-space-size=4096' embeddable dev",
+    "embeddable:update": "npx npm-check-updates -u \"/embeddable/\"",
+    "check-types": "tsc --noemit",
+    "ct": "tsc --noEmit",
+    "cube:playground": "docker-compose -f ./src/cube-playground.yml up",
+    "cube:playground:update": "docker pull cubejs/cube:latest",
+    "cube:cubestore": "mysql -h 127.0.0.1 -P 13306 --user=cubestore -pcubestore",
+    "dev": "cross-env NODE_OPTIONS='--max-old-space-size=4096' embeddable dev",
+    "build": "embeddable build",
+    "push": "embeddable push",
+    "lint": "npx eslint . --ext .ts --ext .tsx",
+    "license-report": "license-report --output=csv --csvHeaders --fields name --fields link --fields licenseType --fields installedVersion --fields author > license-report.csv"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.922.0",
+    "@cubejs-backend/api-gateway": "^1.1.2",
+    "@headlessui/tailwindcss": "^0.2.0",
+    "@react-hook/resize-observer": "^2.0.2",
+    "@swc/core": "^1.13.5",
+    "@types/node": "^24.1.0",
+    "@types/react-simple-maps": "^3.0.4",
+    "@typescript-eslint/eslint-plugin": "^8.11.0",
+    "@typescript-eslint/parser": "^8.6.0",
+    "arml": "^0.0.12",
+    "axios": "^1.8.4",
+    "chart.js": "^4.4.3",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "chartjs-plugin-datalabels": "^2.2.0",
+    "chartjs-plugin-zoom": "^2.2.0",
+    "chrono-node": "^2.7.3",
+    "clsx": "^2.1.1",
+    "d3": "^7.9.0",
+    "d3-scale": "^4.0.2",
+    "date-fns": "^3.6.0",
+    "echarts-for-react": "^3.0.2",
+    "html-to-image": "^1.11.11",
+    "html2canvas": "^1.4.1",
+    "js-yaml": "^4.1.0",
+    "leaflet": "^1.9.4",
+    "leaflet.markercluster": "^1.5.3",
+    "license-report": "^6.7.0",
+    "lodash.debounce": "^4.0.8",
+    "lodash.throttle": "^4.1.1",
+    "lucide-react": "^0.482.0",
+    "qs": "^6.14.0",
+    "rc-slider": "^11.1.8",
+    "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
+    "react-day-picker": "^9.2.1",
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0",
+    "react-leaflet": "^4.2.1",
+    "react-leaflet-markercluster": "^4.2.1",
+    "react-simple-maps": "^3.0.0",
+    "resize-observer-polyfill": "^1.5.1",
+    "tailwind-merge": "^2.2.1",
+    "ts-node": "^10.9.2",
+    "uuid": "^11.0.3",
+    "vite-plugin-css-injected-by-js": "^3.1.1"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.26.0",
+    "@rollup/rollup-win32-x64-msvc": "4.24.4"
+  },
+  "overrides": {
+    "react-simple-maps": {
+      "d3-color": "^3.1.0",
+      "d3-geo": "^3.1.0",
+      "d3-interpolate": "^3.0.1",
+      "d3-select": "^3.0.0",
+      "d3-zoom": "^3.0.0"
+    }
+  },
+  "devDependencies": {
+    "@embeddable.com/core": "^2.9.4",
+    "@embeddable.com/react": "^2.9.7",
+    "@embeddable.com/sdk-core": "^3.13.5",
+    "@embeddable.com/sdk-react": "^3.10.12",
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@types/d3": "^7.4.3",
+    "@types/d3-scale": "^4.0.8",
+    "@types/js-yaml": "^4.0.9",
+    "@types/leaflet": "^1.9.14",
+    "@types/lodash.debounce": "^4.0.9",
+    "@types/lodash.throttle": "^4.1.9",
+    "@types/react": "^18.0.37",
+    "@types/react-dom": "^18.0.11",
+    "@types/react-leaflet-markercluster": "^3.0.4",
+    "@types/uuid": "^10.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.14",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.38.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "postcss": "^8.4.48",
+    "prettier": "3.3.3",
+    "tailwindcss": "^3.3.2",
+    "tw-colors": "^3.3.2",
+    "typescript": "^5.7.3"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es2020": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended",
+      "plugin:react/jsx-runtime",
+      "plugin:react-hooks/recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "settings": {
+      "react": {
+        "version": "18.2"
+      }
+    },
+    "plugins": [
+      "react-refresh",
+      "@typescript-eslint"
+    ],
+    "rules": {
+      "react/display-name": "off",
+      "react/prop-types": "off",
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "react-refresh/only-export-components": "off",
+      "@typescript-eslint/no-explicit-any": "off"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "tailwindcss": {},
+      "autoprefixer": {}
+    }
+  },
+  "prettier": {
+    "bracketSpacing": true,
+    "endOfLine": "auto",
+    "importOrderSeparation": true,
+    "importOrderSortSpecifiers": true,
+    "printWidth": 100,
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "all"
+  }
+}

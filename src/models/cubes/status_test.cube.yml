@@ -1,0 +1,83 @@
+cubes:
+  - name: store_device_status
+    title: Store Device Status
+    sql: >
+      SELECT * 
+      FROM public.store_device_status
+      {% if COMPILE_CONTEXT.securityContext.number_root %}  
+        WHERE number_root = '{ COMPILE_CONTEXT.securityContext.number_root }'
+      {% endif %}
+    data_source: my-db2
+
+    dimensions:
+      - name: id_store
+        sql: id_store
+        type: number
+
+      - name: id_company
+        sql: id_company
+        type: number
+
+      - name: store_name
+        sql: store_name
+        type: string
+
+      - name: ip_address
+        sql: |
+          CASE 
+            WHEN split_part(ip_address::text, '/', 1) LIKE '%.10'
+            THEN split_part(ip_address::text, '/', 1)
+          END
+        type: string
+        title: IP Address
+
+
+
+      - name: number_root
+        sql: number_root
+        type: number
+
+      - name: reader_type 
+        sql: reader_type 
+        type: string
+
+      - name: store_address 
+        sql: store_address 
+        type: string
+
+      - name: status_dim
+        sql: status
+        type: number
+
+      
+      - name: status
+        type: string
+        sql: |
+          CASE
+            WHEN {store_is_open} = 'closed' THEN 'Closed'
+            WHEN {status_dim} = 0 THEN 'Online'
+            WHEN {status_dim} = 1 THEN 'Offline'
+          END
+        title: "Status"
+
+
+
+
+      - name: store_is_open
+        sql: |
+          CASE 
+            WHEN store_is_open = TRUE THEN 'open'
+            WHEN store_is_open = FALSE THEN 'closed'
+            ELSE NULL
+          END
+        type: string
+
+    joins:
+      - name: stores
+        sql: "{CUBE}.id_store = {stores}.id_store"
+        relationship: one_to_one
+
+        
+
+
+      

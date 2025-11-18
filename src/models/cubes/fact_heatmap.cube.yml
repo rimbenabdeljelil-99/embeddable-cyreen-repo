@@ -1,0 +1,91 @@
+cubes:
+  - name: heatmap_cube
+    sql_table: fact_sensor_heatmap
+    data_source: cap_2_3d_sensor
+
+    dimensions:
+      - name: cell_id
+        sql: cell_id
+        type: string
+        primary_key: true
+
+      - name: sensor_num
+        sql: sensor_num
+        type: string
+
+      - name: sensor_type
+        sql: sensor_type
+        type: string
+
+      - name: sensor_count
+        sql: sensor_count
+        type: number
+
+      - name: date
+        sql: date
+        type: time
+
+      - name: day_only
+        sql: TO_CHAR({date}, 'YYYY-MM-DD')
+        type: string
+
+      - name: hour_of_day
+        sql: hour_of_day
+        type: number
+
+      - name: grid_x
+        sql: grid_x
+        type: number
+
+      - name: grid_y
+        sql: grid_y
+        type: number
+
+      - name: x_min
+        sql: x_min
+        type: number
+
+      - name: x_max
+        sql: x_max
+        type: number
+
+      - name: y_min
+        sql: y_min
+        type: number
+
+      - name: y_max
+        sql: y_max
+        type: number
+
+      - name: first_hit_ts
+        sql: first_hit_ts
+        type: time
+
+      - name: last_hit_ts
+        sql: last_hit_ts
+        type: time
+
+      - name: created_at
+        sql: created_at
+        type: time
+
+      - name: updated_at
+        sql: updated_at
+        type: time
+
+    measures:
+      - name: number_of_hits
+        sql: number_of_hits
+        type: sum
+
+      - name: unique_tracks
+        sql: unique_tracks
+        type: count_distinct
+
+      - name: total_dwell_seconds
+        sql: total_dwell_seconds
+        type: sum
+
+      - name: average_dwell_seconds
+        sql: avg_dwell_seconds
+        type: avg

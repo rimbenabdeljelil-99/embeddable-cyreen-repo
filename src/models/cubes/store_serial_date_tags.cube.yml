@@ -1,0 +1,74 @@
+cubes:
+  - name: store_serial_date_tags
+    title: Store Serial Date Tags
+    sql: >
+      SELECT * 
+      FROM public.store_serial_date_tags
+      {% if COMPILE_CONTEXT.securityContext.number_root %}  
+        WHERE number_root = '{ COMPILE_CONTEXT.securityContext.number_root }'
+      {% endif %}
+    data_source: my-db2
+    dimensions:
+      - name: id_store_serial_date_tag
+        sql: id_store_serial_date_tag
+        type: string
+
+      - name: id_store
+        sql: id_store
+        type: number
+
+      - name: id_company
+        sql: id_company
+        type: number
+
+      - name: store_name
+        sql: store_name
+        type: string
+
+      - name: ip_address
+        sql: ip_address
+        type: string
+
+      - name: number_root
+        sql: number_root
+        type: number
+
+      - name: tag_timestamp
+        sql: tag_timestamp
+        type: time
+
+      - name: serial_timestamp
+        sql: serial_timestamp
+        type: time
+        title: "Time Range"
+
+      - name: record_count
+        sql: record_count
+        type: number
+
+      - name: update_timestamp
+        sql: update_timestamp
+        type: time
+
+      - name: id_area_reader
+        sql: id_area_reader
+        type: number
+
+      - name: hour
+        sql: EXTRACT(HOUR FROM serial_timestamp)
+        type: number
+        title: "Hour"
+
+    measures:
+
+      - name: impressions
+        sql: "ROUND(1.5 * SUM(record_count))"
+        type: number
+        title: "Impressions"
+
+      - name: impressions_despar
+        sql: "ROUND(SUM(record_count))"
+        type: number
+        title: "Impressions Despar"
+
+      

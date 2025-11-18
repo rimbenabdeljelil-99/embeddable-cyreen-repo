@@ -1,0 +1,69 @@
+cubes :
+
+  - name: stores
+    title: Stores
+    sql: >
+      SELECT * 
+      FROM public.stores
+      {% if COMPILE_CONTEXT.securityContext.number_root %}  
+        WHERE CAST(SPLIT_PART(tree_path, '-', 2) AS INT) = '{ COMPILE_CONTEXT.securityContext.number_root }'
+      {% endif %}
+    data_source: my-db2
+    
+    dimensions:
+      - name: id_store
+        sql: id_store
+        type: number
+
+      - name: id_region
+        sql: id_region
+        type: number
+
+      
+      - name: id_company
+        sql: id_company
+        type: number
+      
+      - name: name
+        sql: name
+        type: string
+
+      - name: tree_path
+        sql: tree_path
+        type: string
+      
+      - name: number_store_cyreen
+        sql: number_store_cyreen
+        type: number
+
+      - name: tree_path
+        sql: tree_path
+        type: string
+
+
+      - name: active
+        sql: |
+          CASE 
+            WHEN active = TRUE THEN 'true'
+            WHEN active = FALSE THEN 'false'
+            ELSE NULL
+          END
+        type: string
+
+
+      - name: monitor_active
+        sql: |
+          CASE 
+            WHEN monitor_active = TRUE THEN 'true'
+            WHEN monitor_active = FALSE THEN 'false'
+            ELSE NULL
+          END
+        type: string
+
+
+      - name: number_root
+        sql: |
+          CAST(
+            SPLIT_PART(tree_path, '-', 2) AS INT
+          )
+        type: number

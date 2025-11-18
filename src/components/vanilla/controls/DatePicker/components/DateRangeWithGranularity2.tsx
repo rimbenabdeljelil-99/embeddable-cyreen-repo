@@ -1,0 +1,172 @@
+import { dateParser } from '@cubejs-backend/api-gateway/dist/src/dateParser.js';
+import { DataResponse, Dimension, Granularity, TimeRange } from '@embeddable.com/core';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+
+import Dropdown from '../../Dropdown';
+import {
+  getComparisonOptions,
+  getComparisonPeriod,
+  getNote,
+  getValidGranularities,
+} from '../utils/dateUtils';
+import DateRangePicker from './DateRangePicker';
+
+const valueProp: Dimension = {
+  __type__: 'dimension',
+  name: 'value',
+  nativeType: 'string',
+  title: 'Value',
+};
+
+export type Props = {
+  defaultPeriod?: TimeRange;
+  defaultComparison?: string;
+  defaultGranularity?: Granularity;
+  showGranularity?: boolean;
+  onChangePeriod: (v: TimeRange | null) => void;
+  onChangeComparison: (v: TimeRange | null) => void;
+  onChangeGranularity: (v: Granularity | null) => void;
+};
+
+export default function DateRangeWithGranularity(props: Props) {
+  const { onChangeComparison, onChangePeriod, defaultPeriod } = props;
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [hideDate, setHideDate] = useState(false);
+  const [period, setPeriod] = useState(defaultPeriod);
+  const [granularity, setGranularity] = useState(props.defaultGranularity);
+  const [compareOption, setCompareOption] = useState(props.defaultComparison);
+  const [customComparisonPeriod, setCustomComparisonPeriod] = useState<TimeRange | null>(null);
+
+  useLayoutEffect(() => {
+    const interval = setInterval(() => {
+      const width = ref.current?.clientWidth;
+      if (width) setHideDate(width < 250);
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const granularityOptions = getValidGranularities(period);
+
+  const comparisonOptions: DataResponse = useMemo(() => {
+    return {
+      isLoading: false,
+      data: getComparisonOptions(period),
+    };
+  }, [period?.from, period?.to]);
+
+  const changeComparisonOption = useCallback(
+    (value: string) => {
+      setCompareOption(value);
+      if (!period?.from || !period?.to) return;
+
+      if (value === 'No comparison') {
+        onChangeComparison(null);
+        return;
+      }
+
+      if (value === 'Custom period') {
+        // user will manually select a comparison period
+        return;
+      }
+
+      // predefined comparison periods
+      onChangeComparison({
+        ...getComparisonPeriod(value, period),
+      });
+    },
+    [onChangeComparison, period, setCompareOption],
+  );
+
+  useEffect(() => {
+    if (compareOption) changeComparisonOption(compareOption);
+  }, [compareOption, changeComparisonOption]);
+
+  // Ensure default period is properly parsed on first load
+  useEffect(() => {
+    if (!defaultPeriod) return;
+    if (!defaultPeriod?.from && !defaultPeriod?.to && defaultPeriod?.relativeTimeString) {
+      const [from, to] = dateParser(defaultPeriod?.relativeTimeString, '');
+      if (!from || !to) return;
+      defaultPeriod.from = new Date(from);
+      defaultPeriod.to = new Date(to);
+      setPeriod(defaultPeriod);
+      onChangePeriod(defaultPeriod as TimeRange);
+      return;
+    }
+  }, [defaultPeriod, onChangePeriod]);
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 h-auto">
+      {/* Primary date picker */}
+      <div ref={ref} className="grow basis-0 max-w-96 h-full">
+        <DateRangePicker
+          hideDate={hideDate}
+          value={period}
+          onChange={(period) => {
+            setPeriod(period as TimeRange);
+            props.onChangePeriod((period as TimeRange) || null);
+
+            const g = getValidGranularities(period as TimeRange).recommended.value;
+            if (granularity === g) return;
+            setGranularity(g);
+            props.onChangeGranularity(g);
+          }}
+        />
+      </div>
+
+      {/* Comparison dropdown */}
+{!!onChangeComparison && (
+  <div className="flex items-center px-3"> {/* Added horizontal padding */}
+    <div className="hidden md:block shrink whitespace-nowrap text-[14px] font-normal text-[#AF3241] leading-none mx-2">
+      compare to
+    </div>
+    <div className="grow basis-0 max-w-[150px] h-full mx-2">
+      <Dropdown
+        unclearable
+        minDropdownWidth={320}
+        defaultValue={compareOption}
+        options={comparisonOptions}
+        placeholder="Comparison"
+        onChange={changeComparisonOption}
+        property={valueProp}
+      />
+    </div>
+  </div>
+)}
+
+
+      {/* Secondary date picker for "Custom period" */}
+      {compareOption === 'Custom period' && (
+        <div className="grow basis-0 max-w-96 h-full ml-2">
+          <DateRangePicker
+            value={customComparisonPeriod}
+            onChange={(v) => {
+              setCustomComparisonPeriod(v as TimeRange);
+              onChangeComparison(v as TimeRange);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Granularity dropdown */}
+      {!!props.showGranularity && (
+        <div className="grow basis-0 max-w-[115px] h-full ml-2">
+          <Dropdown
+            unclearable
+            minDropdownWidth={80}
+            defaultValue={granularity}
+            options={granularityOptions}
+            property={valueProp}
+            placeholder="Granularity"
+            onChange={(c) => {
+              const value = c as Granularity;
+              setGranularity(value);
+              props.onChangeGranularity(value);
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}

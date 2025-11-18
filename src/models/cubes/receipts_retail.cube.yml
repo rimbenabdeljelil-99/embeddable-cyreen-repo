@@ -1,0 +1,626 @@
+cubes:
+  - name: receipts_retail
+    title: Receipts Retail
+    data_source: my-db
+    sql: >
+      SELECT * 
+      FROM public.receipts_retail  
+      {% if COMPILE_CONTEXT.securityContext.number_root %}  
+        WHERE number_root = '{ COMPILE_CONTEXT.securityContext.number_root }'
+      {% endif %}
+
+    dimensions:
+      - name: id_receipts_retail
+        sql: id_receipts_retail
+        type: number
+        primary_key: true
+
+      - name: id_company
+        sql: id_company
+        type: number
+
+      - name: year
+        sql: year
+        type: number
+
+      - name: week
+        sql: week
+        type: number
+
+      - name: dow
+        sql: CASE EXTRACT(DOW FROM date::DATE)
+            WHEN 0 THEN 'Sunday'
+            WHEN 1 THEN 'Monday'
+            WHEN 2 THEN 'Tuesday'
+            WHEN 3 THEN 'Wednesday'
+            WHEN 4 THEN 'Thursday'
+            WHEN 5 THEN 'Friday'
+            WHEN 6 THEN 'Saturday'
+          END
+        type: number
+
+      - name: month1
+        sql: CASE EXTRACT(MONTH FROM date::DATE)
+            WHEN 1 THEN 'January'
+            WHEN 2 THEN 'February'
+            WHEN 3 THEN 'March'
+            WHEN 4 THEN 'April'
+            WHEN 5 THEN 'May'
+            WHEN 6 THEN 'June'
+            WHEN 7 THEN 'July'
+            WHEN 8 THEN 'August'
+            WHEN 9 THEN 'September'
+            WHEN 10 THEN 'October'
+            WHEN 11 THEN 'November'
+            WHEN 12 THEN 'December'
+          END
+        type: number
+
+      - name: month
+        sql: TRIM(TO_CHAR(date::DATE, 'Month')) || ' ' || EXTRACT(YEAR FROM date::DATE)
+        type: string
+
+      - name: hour
+        sql: hour
+        type: number
+
+      - name: hour_group
+        sql: hour_group
+        type: string
+
+      - name: timestamp
+        sql: timestamp
+        type: time
+
+      - name: date
+        sql: date
+        type: time
+
+      - name: id_market_type
+        sql: id_market_type
+        type: number
+
+      - name: name_market_type
+        sql: name_market_type
+        type: string
+
+      - name: name_retailer
+        sql: name_retailer
+        type: string
+
+      - name: id_company_retailer
+        sql: id_company_retailer
+        type: number
+
+      - name: name_store
+        sql: name_store
+        type: string
+
+      - name: id_store
+        sql: id_store
+        type: number
+
+      - name: installed_checkouts
+        sql: installed_checkouts
+        type: number
+
+      - name: installed_trolleys
+        sql: installed_trolleys
+        type: number
+
+      - name: installed_baskets
+        sql: installed_baskets
+        type: number
+
+      - name: store_size
+        sql: store_size
+        type: number
+
+      - name: name_location_type
+        sql: name_location_type
+        type: string
+
+      - name: zip_code
+        sql: zip_code
+        type: string
+
+      - name: latitude
+        sql: latitude
+        type: number
+
+      - name: longitude
+        sql: longitude
+        type: number
+
+      - name: name_country
+        sql: name_country
+        type: string
+
+      - name: name_region
+        sql: name_region
+        type: string
+
+      - name: clouds
+        sql: clouds
+        type: number
+
+      - name: feels_like
+        sql: feels_like
+        type: number
+
+      - name: humidity
+        sql: humidity
+        type: number
+
+      - name: temp
+        sql: temp
+        type: number
+
+      - name: rain_per_hour
+        sql: rain_per_hour
+        type: number
+
+      - name: rain_boolean
+        sql: rain_boolean
+        type: boolean
+
+      - name: snow_per_hour
+        sql: snow_per_hour
+        type: number
+
+      - name: snow_boolean
+        sql: snow_boolean
+        type: boolean
+
+      - name: visibility
+        sql: visibility
+        type: number
+
+      - name: wind_speed
+        sql: wind_speed
+        type: number
+
+      - name: number_checkout
+        sql: number_checkout
+        type: number
+
+      - name: checkout_category
+        sql: checkout_category
+        type: string
+
+      - name: name_device_type
+        sql: name_device_type
+        type: string
+
+      - name: frequency
+        sql: frequency
+        type: number
+
+      - name: sales
+        sql: sales
+        type: number
+
+      - name: revenue
+        sql: revenue
+        type: number
+
+      - name: last_edit
+        sql: last_edit
+        type: time
+
+      - name: timestamp_last_edit
+        sql: timestamp_last_edit
+        type: time
+
+      - name: batch_number
+        sql: batch_number
+        type: number
+
+      - name: number_root
+        sql: number_root
+        type: number
+
+      - name: frequency_all
+        type: number
+        sql: |
+          CASE 
+            WHEN name_device_type = 'all' THEN frequency
+            ELSE 0
+          END
+
+      - name: frequency_trolley
+        type: number
+        sql: |
+          CASE 
+            WHEN name_device_type = 'only_trolley' THEN frequency
+            ELSE 0
+          END
+
+      - name: sales_trolley
+        type: number
+        sql: |
+          CASE 
+            WHEN name_device_type = 'only_trolley' THEN sales
+            ELSE 0
+          END
+
+      - name: revenue_trolley
+        type: number
+        sql: |
+          CASE 
+            WHEN name_device_type = 'only_trolley' THEN revenue
+            ELSE 0
+          END
+
+      - name: frequency_no_device
+        type: number
+        sql: |
+          CASE 
+            WHEN name_device_type = 'no_device' THEN frequency
+            ELSE 0
+          END
+
+      - name: sales_no_device
+        type: number
+        sql: |
+          CASE 
+            WHEN name_device_type = 'no_device' THEN sales
+            ELSE 0
+          END
+
+      - name: revenue_no_device
+        type: number
+        sql: |
+          CASE 
+            WHEN name_device_type = 'no_device' THEN revenue
+            ELSE 0
+          END
+
+    measures:
+
+      # Helper multiplier
+      - name: multiplier
+        type: number
+        sql: |
+          CASE 
+            WHEN '{ COMPILE_CONTEXT.securityContext.number_root }' = '76' THEN 1.8 
+            ELSE 1 
+          END
+        title: "Dynamic Multiplier"
+
+      - name: month_sort
+        sql: |
+          STRING_AGG(
+            DISTINCT 
+            (EXTRACT(YEAR FROM date::DATE)::INT * 100 + EXTRACT(MONTH FROM date::DATE)::INT)::TEXT, 
+            ', '
+          )
+        type: string
+        title: "month sort"
+
+      - name: weekday_agg_string
+        sql: |
+          STRING_AGG(
+            DISTINCT 
+            CASE 
+              WHEN EXTRACT(DOW FROM date::DATE) = 0 THEN '7' 
+              ELSE CAST(EXTRACT(DOW FROM date::DATE) AS VARCHAR) 
+            END, 
+            ', '
+          )
+        type: string
+        title: "Weekdays (Aggregated)"
+
+      # --- SUMS ---
+      - name: sum_frequency
+        type: sum
+        sql: "frequency * {multiplier}"
+        title: "Total Frequency"
+
+      - name: sum_sale
+        type: sum
+        sql: "sales * {multiplier}"
+        title: "Sales (Units)"
+
+      - name: sum_revenue_euros
+        type: sum
+        sql: "revenue * {multiplier}"
+        title: "Revenue (€)"
+
+      - name: sum_revenue
+        type: sum
+        sql: "revenue * {multiplier}"
+        title: "Revenue (CLP$)"
+
+      # --- AVERAGES & RATIOS ---
+      - name: daily_shoppers
+        type: number
+        sql: "(SUM(frequency * {multiplier})) / COUNT(DISTINCT DATE(timestamp))"
+        title: "Daily Shoppers"
+
+      - name: average_sales_decimal
+        type: number
+        sql: "(SUM(sales * {multiplier}) * 1.0 / SUM(frequency * {multiplier}))"
+        title: "Average Sales Decimal"
+
+      - name: average_sales
+        type: number
+        sql: "ROUND({average_sales_decimal},0)"
+        title: "Average Sales"
+
+      - name: average_revenue
+        type: number
+        sql: "(SUM(revenue * {multiplier}) / SUM(frequency * {multiplier}))"
+        title: "Average Revenue"
+
+      - name: null_value
+        type: number
+        sql: "(SUM(revenue * {multiplier}) - SUM(revenue * {multiplier}))"
+        title: "Null Value"
+
+      # --- Profitability ---
+      - name: receipt_quote_with_trolley
+        type: number
+        sql: "(SUM({frequency_trolley} * {multiplier}) * 1.0 / SUM({frequency_all} * {multiplier}))"
+        title: "Receipt Quote With Trolley"
+
+      - name: receipt_quote_without_trolley
+        type: number
+        sql: "(1 - ({receipt_quote_with_trolley}))"
+        title: "Receipt Quote Without Trolley"
+
+      - name: receipt_quote_with_trolley_percent
+        type: number
+        sql: "ROUND(({receipt_quote_with_trolley} * 100),0)"
+        title: "Receipt Quote With Trolley (%)"
+
+      - name: receipt_quote_without_trolley_percent
+        type: number
+        sql: "ROUND(({receipt_quote_without_trolley} * 100),0)"
+        title: "Receipt Quote Without Trolley (%)"
+
+      # --- Sales & Revenue by device ---
+      - name: sum_sales_trolley
+        type: sum
+        sql: "{sales_trolley} * {multiplier}"
+        title: "Sum Sales Trolley"
+
+      - name: sum_revenue_trolley
+        type: sum
+        sql: "{revenue_trolley} * {multiplier}"
+        title: "Sum Revenue Trolley"
+
+      - name: sum_sales_no_device
+        type: sum
+        sql: "{sales_no_device} * {multiplier}"
+        title: "Sum Sales No Device"
+
+      - name: sum_revenue_no_device
+        type: sum
+        sql: "{revenue_no_device} * {multiplier}"
+        title: "Sum Revenue No Device"
+
+      # --- Average by device ---
+      - name: average_sales_trolley
+        type: number
+        sql: "(SUM({sales_trolley} * {multiplier}) * 1.0 / SUM({frequency_trolley} * {multiplier}))"
+        title: "Average Sales Trolley"
+
+      - name: average_revenue_trolley
+        type: number
+        sql: "(SUM({revenue_trolley} * {multiplier}) * 1.0 / SUM({frequency_trolley} * {multiplier}))"
+        title: "Average Revenue Trolley"
+
+      - name: average_sales_non_trolley
+        type: number
+        sql: "(SUM({sales_no_device} * {multiplier}) * 1.0 / SUM({frequency_no_device} * {multiplier}))"
+        title: "Average Sales Non Trolley"
+
+      - name: average_revenue_non_trolley
+        type: number
+        sql: "(SUM({revenue_no_device} * {multiplier}) * 1.0 / SUM({frequency_no_device} * {multiplier}))"
+        title: "Average Revenue Non Trolley"
+
+      # --- Uplifts ---
+      - name: uplift_trolley_vs_non_trolley_sales
+        type: number
+        sql: "((({average_sales_trolley}) / ({average_sales_non_trolley})) - 1)"
+        title: "Uplift Trolley vs Non Trolley Sales"
+
+      - name: uplift_trolley_vs_non_trolley_revenue
+        type: number
+        sql: "((({average_revenue_trolley}) / ({average_revenue_non_trolley})) - 1)"
+        title: "Uplift Trolley vs Non Trolley Revenue"
+
+      - name: uplift_trolley_vs_non_trolley_sales_percent
+        type: number
+        sql: "ROUND({uplift_trolley_vs_non_trolley_sales} * 100)"
+        title: "Uplift Trolley vs Non Trolley Sales (%)"
+
+      - name: uplift_trolley_vs_non_trolley_revenue_percent
+        type: number
+        sql: "ROUND({uplift_trolley_vs_non_trolley_revenue} * 100)"
+        title: "Uplift Trolley vs Non Trolley Revenue (%)"
+
+      # --- Indicators ---
+      - name: positive_sales_trolley
+        type: string
+        sql: |
+          CASE 
+            WHEN {uplift_trolley_vs_non_trolley_sales} > 0 THEN '↑'
+            ELSE ''
+          END
+        title: "Positive Sales Trolley (%)"
+
+      - name: negative_sales_trolley
+        type: string
+        sql: |
+          CASE 
+            WHEN {uplift_trolley_vs_non_trolley_sales} < 0 THEN '↓'
+            ELSE ''
+          END
+        title: "Negative Sales Trolley (%)"
+
+      - name: positive_revenue_trolley
+        type: string
+        sql: |
+          CASE 
+            WHEN {uplift_trolley_vs_non_trolley_revenue} > 0 THEN '↑'
+            ELSE ''
+          END
+        title: "Positive Revenue Trolley (%)"
+
+      - name: negative_revenue_trolley
+        type: string
+        sql: |
+          CASE 
+            WHEN {uplift_trolley_vs_non_trolley_revenue} < 0 THEN '↓'
+            ELSE ''
+          END
+        title: "Negative Revenue Trolley (%)"
+
+      # --- Timestamps ---
+      - name: start_timestamp
+        sql: timestamp
+        type: min
+        title: Start Timestamp
+
+      - name: end_timestamp
+        sql: timestamp
+        type: max
+        title: End Timestamp
+
+      # --- Time spans ---
+      - name: number_of_days
+        type: number
+        sql: "(DATE_PART('day', {end_timestamp}::timestamp - {start_timestamp}::timestamp) + 1)"
+        title: "No. of days"
+
+      - name: number_of_weeks
+        type: number
+        sql: "(CEILING(DATE_PART('day', {end_timestamp} - {start_timestamp}) / 7.0))"
+        title: "No. of weeks"
+
+      # --- Frequency & Revenue per period ---
+      - name: sum_frequency_no_device
+        type: sum
+        sql: "{frequency_no_device} * {multiplier}"
+        title: "Sum Frequency No Device"
+
+      - name: sum_frequency_trolley
+        type: sum
+        sql: "{frequency_trolley} * {multiplier}"
+        title: "Sum Frequency Trolley"
+
+      # --- Hourly / Weekly averages ---
+      - name: average_frequency_trolley_hourly
+        type: number
+        sql: |
+          CASE 
+            WHEN {number_of_days} = 0 THEN NULL
+            ELSE {sum_frequency_trolley} * 1.0 / {number_of_days}
+          END
+        title: "Average Frequency Trolley Hourly"
+
+      - name: average_frequency_no_device_hourly
+        type: number
+        sql: |
+          CASE 
+            WHEN {number_of_days} = 0 THEN NULL
+            ELSE {sum_frequency_no_device} * 1.0 / {number_of_days}
+          END
+        title: "Average Frequency No Device Hourly"
+
+      - name: average_frequency_no_device_weekly
+        type: number
+        sql: |
+          CASE 
+            WHEN {number_of_weeks} = 0 THEN NULL
+            ELSE {sum_frequency_no_device} * 1.0 / {number_of_weeks}
+          END
+        title: "Average Frequency No Device Weekly"
+
+      - name: average_frequency_trolley_weekly
+        type: number
+        sql: |
+          CASE 
+            WHEN {number_of_weeks} = 0 THEN NULL
+            ELSE {sum_frequency_trolley} * 1.0 / {number_of_weeks}
+          END
+        title: "Average Frequency Trolley Weekly"
+
+      # --- Sales & Revenue per time ---
+      - name: average_sales_trolley_hourly
+        type: number
+        sql: |
+          CASE 
+            WHEN {number_of_days} = 0 THEN NULL
+            ELSE {sum_sales_trolley} * 1.0 / {number_of_days}
+          END
+        title: "Average Sales Trolley Hourly"
+
+      - name: average_sales_no_device_hourly
+        type: number
+        sql: |
+          CASE 
+            WHEN {number_of_days} = 0 THEN NULL
+            ELSE {sum_sales_no_device} * 1.0 / {number_of_days}
+          END
+        title: "Average Sales No Device Hourly"
+
+      - name: average_sales_trolley_weekly
+        type: number
+        sql: |
+          CASE 
+            WHEN {number_of_weeks} = 0 THEN NULL
+            ELSE {sum_sales_trolley} * 1.0 / {number_of_weeks}
+          END
+        title: "Average Sales Trolley Weekly"
+
+      - name: average_sales_no_device_weekly
+        type: number
+        sql: |
+          CASE 
+            WHEN {number_of_weeks} = 0 THEN NULL
+            ELSE {sum_sales_no_device} * 1.0 / {number_of_weeks}
+          END
+        title: "Average Sales No Device Weekly"
+
+      - name: average_revenue_trolley_hourly
+        type: number
+        sql: |
+          CASE 
+            WHEN {number_of_days} = 0 THEN NULL
+            ELSE {sum_revenue_trolley} * 1.0 / {number_of_days}
+          END
+        title: "Average Revenue Trolley Hourly"
+
+      - name: average_revenue_no_device_hourly
+        type: number
+        sql: |
+          CASE 
+            WHEN {number_of_days} = 0 THEN NULL
+            ELSE {sum_revenue_no_device} * 1.0 / {number_of_days}
+          END
+        title: "Average Revenue No Device Hourly"
+
+      - name: average_revenue_trolley_weekly
+        type: number
+        sql: |
+          CASE 
+            WHEN {number_of_weeks} = 0 THEN NULL
+            ELSE {sum_revenue_trolley} * 1.0 / {number_of_weeks}
+          END
+        title: "Average Revenue Trolley Weekly"
+
+      - name: average_revenue_no_device_weekly
+        type: number
+        sql: |
+          CASE 
+            WHEN {number_of_weeks} = 0 THEN NULL
+            ELSE {sum_revenue_no_device} * 1.0 / {number_of_weeks}
+          END
+        title: "Average Revenue No Device Weekly"
+
+    refresh_key:
+      every: 12 hour

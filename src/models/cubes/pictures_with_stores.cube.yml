@@ -1,0 +1,100 @@
+cubes:
+  - name: pictures_with_stores
+    data_source: my-db2
+    sql: > 
+      SELECT P.id_picture, store_element::int, S.number_store_cyreen, P.content, P.original_content_name, P.date_start, P.date_end, S.id_store, S.id_company, S.name, S.tree_path
+      FROM public.pictures P
+      JOIN LATERAL jsonb_array_elements_text(P.stores) AS store_element ON true
+      JOIN public.stores S ON S.number_store_cyreen = store_element::int
+      {% if COMPILE_CONTEXT.securityContext.number_root %}  
+        WHERE CAST(SPLIT_PART(S.tree_path, '-', 2) AS INT) = '{ COMPILE_CONTEXT.securityContext.number_root }'
+      {% endif %}
+
+
+    dimensions:
+      - name: id_picture
+        sql: id_picture
+        type: number
+
+      
+      - name: id_campaign
+        sql: id_campaign
+        type: number
+
+
+      - name: store_element
+        sql: store_element
+        type: number
+
+      - name: content
+        sql: content
+        type: string
+
+      - name: original_content_name
+        sql: original_content_name
+        type: string
+        title: Visual
+
+
+      - name: date_start
+        sql: date_start
+        type: time
+      
+      - name: date_end
+        sql: date_end
+        type: time
+
+      - name: id_store
+        sql: id_store
+        type: number
+
+      
+      - name: id_company
+        sql: id_company
+        type: number
+      
+      - name: name
+        sql: name
+        type: string
+
+      - name: tree_path
+        sql: tree_path
+        type: string
+      
+      - name: number_store_cyreen
+        sql: number_store_cyreen
+        type: number
+
+
+      - name: number_root
+        sql: |
+          CAST(
+            SPLIT_PART(tree_path, '-', 2) AS INT
+          )
+        type: number
+
+
+      - name : status
+        type: string
+        sql: |
+          CASE
+            WHEN CURRENT_DATE BETWEEN CAST({pictures_with_stores}.date_start AS DATE) AND CAST({pictures_with_stores}.date_end AS DATE)  THEN 'Active'
+            ELSE 'Inactive' 
+          END
+        title: "Status" 
+
+
+      - name: date_start_only
+        sql: TO_CHAR(date_start, 'YYYY-MM-DD')
+        type: string
+        title : Start Date
+
+      
+      - name: date_end_only
+        sql: TO_CHAR(date_end, 'YYYY-MM-DD')
+        type: string
+        title: End Date
+
+    refresh_key:
+      every: 12 hour
+      

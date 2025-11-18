@@ -1,0 +1,46 @@
+cubes:
+
+  - name: weiden_count_per_day
+    title: Weiden Count
+    sql: >
+      SELECT * 
+      FROM vw_weiden_count_per_day_reader
+    data_source: my-db2
+
+    dimensions:
+      - name: id_area_reader
+        sql: id_area_reader
+        type: number
+      
+      - name: reader_name
+        sql: >
+          CASE 
+            WHEN id_area_reader = 101 THEN 'Entrance Area'
+            WHEN id_area_reader = 102 THEN 'Second Area'
+            WHEN id_area_reader = 103 THEN 'Wine Area'
+            ELSE 'Unknown Area'
+          END
+        type: string
+        title: "Reader Name"
+
+      - name: name
+        sql: name
+        type: string
+
+      - name: data_day
+        sql: data_day
+        type: time
+
+      - name: week
+        type: number
+        sql: "EXTRACT(WEEK FROM data_day)"
+
+      - name: count
+        sql: count
+        type: number
+
+    measures:
+      - name: shoppers
+        type: sum
+        sql: count
+        title: "Number of Shoppers"

@@ -1,0 +1,128 @@
+cubes:
+  # Cube 1: Fact line crossings
+  - name: fact_line_crossings
+    sql: |
+      SELECT *
+      FROM fact_line_crossings
+      WHERE direction = 'FORWARD'
+    data_source: cap_2_3d_sensor
+
+    dimensions:
+      - name: crossing_id
+        sql: crossing_id
+        type: string
+        primary_key: true
+
+      - name: ts_utc
+        sql: ts_utc
+        type: time
+
+      - name: ts_tz
+        sql: ts_tz
+        type: time
+
+      - name: store_id
+        sql: store_id
+        type: number
+
+      - name: sensor_num
+        sql: sensor_num
+        type: string
+
+      - name: geometry_name
+        sql: geometry_name
+        type: string
+
+
+      - name: geometry_zone
+        sql: |
+          CASE
+            WHEN geometry_name = 'Z4FZ1L' THEN 'Fullfill Zone'
+            WHEN geometry_name = 'Z4FZ2L' THEN 'Max Zone'
+            WHEN geometry_name = 'Z4FZ3L' THEN 'More Zone'
+            WHEN geometry_name = 'Z4FZ4L' THEN 'ESN Zone'
+            WHEN geometry_name = 'Z4FZ5L' THEN 'Allstar Zone'
+            WHEN geometry_name = 'Z4FZ6L' THEN 'YFood Zone'
+            WHEN geometry_name = 'Z4FZ7L' THEN 'Zweitplatzierung Zone'
+          ELSE 'Unknown Zone'
+          END
+        type: string
+
+      - name: track_id
+        sql: track_id
+        type: string
+
+      - name: direction
+        sql: direction
+        type: string
+
+      - name: gender
+        sql: gender
+        type: string
+
+      - name: person_height
+        sql: person_height
+        type: number
+
+      - name: hour_of_day
+        sql: hour_of_day
+        type: number
+
+      - name: day_date
+        sql: day_date
+        type: time
+
+
+      - name: month_name
+        sql: TO_CHAR({day_date}, 'Month')
+        type: string
+
+      - name: month_number
+        sql: EXTRACT(MONTH FROM {day_date})
+        type: number
+
+      # Week number
+      - name: week_number
+        sql: EXTRACT(WEEK FROM {day_date})
+        type: number
+
+# Date (formatted as YYYY-MM-DD)
+      - name: day_only
+        sql: TO_CHAR({day_date}, 'YYYY-MM-DD')
+        type: time
+        
+
+    measures:
+      - name: count
+        sql: CONCAT({track_id}, '_', {day_only})
+        type: count_distinct
+        title: 'Frequency'
+
+      - name: count_male
+        sql: CONCAT({track_id}, '_', {day_only})
+        type: count_distinct
+        title: 'Male'
+        filters:
+          - sql: "{CUBE}.gender = 'MALE'"
+
+      - name: count_female
+        sql: CONCAT({track_id}, '_', {day_only})
+        type: count_distinct
+        title: 'Female'
+        filters:
+          - sql: "{CUBE}.gender = 'FEMALE'"
+
+
+      - name: min_day
+        sql: "{day_only}"
+        type: min
+        title: 'Min Day'
+
+      - name: max_day
+        sql: "{day_only}"
+        type: max
+        title: 'Max Day'
+
+
+
+      

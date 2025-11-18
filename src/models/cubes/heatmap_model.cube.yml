@@ -1,0 +1,72 @@
+cubes:
+  - name: heatmap_model
+    sql: >
+      SELECT 
+        pos_x,
+        pos_y,
+        sensor_num,
+        gender,
+        track_id
+      FROM public.raw_events
+    data_source: cap_2_3d_sensor
+
+    dimensions:
+
+      - name: event_id 
+        sql: event_id 
+        type: string 
+        primary_key: true
+
+      - name: pos_x
+        sql: pos_x
+        type: number
+
+      - name: pos_y
+        sql: pos_y
+        type: number
+
+      - name: sensor_num
+        sql: sensor_num
+        type: string
+
+      - name: gender
+        sql: gender
+        type: string
+
+      - name: cluster_x
+        sql: ROUND(pos_x::numeric, 1)
+        type: number
+
+      - name: cluster_y
+        sql: ROUND(pos_y::numeric, 1)
+        type: number
+
+    measures:
+      - name: count
+        sql: track_id
+        type: count_distinct
+
+      - name: position_frequency
+        type: count
+        title: "Frequency per position cluster"
+
+      - name: min_x
+        sql: pos_x
+        type: min
+
+      - name: max_x
+        sql: pos_x
+        type: max
+
+      - name: min_y
+        sql: pos_y
+        type: min
+
+      - name: max_y
+        sql: pos_y
+        type: max
+
+    joins:
+      - name: fact_zone_visits
+        sql: "{CUBE}.track_id = {fact_zone_visits}.track_id"
+        relationship: has_many

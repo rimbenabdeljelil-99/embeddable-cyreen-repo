@@ -1,0 +1,33 @@
+cubes:
+  
+  - name: clips
+    title: Clips
+    sql_table: public.clips
+    data_source: my-db2
+
+    dimensions:
+      - name: id_clip
+        sql: id_clip
+        type: number
+        primary_key: true
+
+      
+      - name: id_campaign
+        sql: id_campaign
+        type: number
+      
+      - name: content
+        sql: content
+        type: string
+      
+      - name: date_start
+        sql: date_start
+        type: time
+      
+      - name: date_end
+        sql: date_end
+        type: time
+      
+      - name: stores
+        sql: stores::text
+        type: string

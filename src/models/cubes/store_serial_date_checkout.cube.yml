@@ -1,0 +1,74 @@
+cubes:
+  - name: store_serial_date_checkout
+    title: Store Serial Date Checkout
+    sql: >
+      SELECT * 
+      FROM public.store_serial_date_checkout
+      {% if COMPILE_CONTEXT.securityContext.number_root %}  
+        WHERE number_root = '{ COMPILE_CONTEXT.securityContext.number_root }'
+      {% endif %}
+    data_source: my-db2
+
+    dimensions:
+      - name: id_store_serial_date_checkout
+        sql: id_store_serial_date_checkout
+        type: string
+
+      - name: id_store
+        sql: id_store
+        type: number
+
+      - name: id_company
+        sql: id_company
+        type: number
+
+      - name: store_name
+        sql: store_name
+        type: string
+
+      - name: ip_address
+        sql: ip_address
+        type: string
+
+      - name: number_root
+        sql: number_root
+        type: number
+
+      - name: checkout_number
+        sql: checkout_number
+        type: number
+
+      - name: checkout_timestamp
+        sql: checkout_timestamp
+        type: time
+
+      - name: serial_timestamp
+        sql: serial_timestamp
+        type: time
+        title: "Time Range"
+
+      - name: record_count
+        sql: record_count
+        type: number
+
+      - name: update_timestamp
+        sql: update_timestamp
+        type: time
+
+      - name: hour
+        sql: EXTRACT(HOUR FROM serial_timestamp)
+        type: number
+        title: "Hour"
+
+    measures:
+
+      - name: checkout_events
+        sql: record_count
+        type: sum
+        title: "Checkout Events"
+
+
+    refresh_key:
+      every: 12 hour
+
+      

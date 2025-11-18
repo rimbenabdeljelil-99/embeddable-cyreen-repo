@@ -1,0 +1,181 @@
+cubes:
+  - name: tag_events_with_area_readers
+    data_source: my-db2
+    sql: >
+      SELECT 
+        ar.active AS active,
+        te.age AS age,
+        te.best_shot_score AS best_shot_score,
+        te.face_angle AS face_angle,
+        te.filter_record AS filter_record,
+        te.gender AS gender,
+        ar.id_area_reader AS id_area_reader_area_readers,
+        te.id_area_reader AS id_area_reader,
+        te.id_clip AS id_clip,
+        te.id_company AS id_company,
+        ar.id_reader_type AS id_reader_type,
+        ar.id_store AS id_store_area_readers,
+        te.id_store AS id_store,
+        te.id_tag_event AS id_tag_event,
+        ar.ip_address AS ip_address,
+        ar.last_edit AS last_edit_area_readers,
+        te.last_edit AS last_edit,
+        te.name AS name,
+        te.number_receipt_identifier AS number_receipt_identifier,
+        te.number_root AS number_root,
+        te.number_tag AS number_tag,
+        te.rssi AS rssi,
+        te.timestamp AS timestamp,
+        ar.timestamp_last_edit AS timestamp_last_edit_area_readers,
+        te.timestamp_last_edit AS timestamp_last_edit,
+        te.type AS type,
+        ar.x_coordinate AS x_coordinate,
+        ar.y_coordinate AS y_coordinate
+      FROM (
+        SELECT 
+          te.*, 
+          s.name,
+          CAST(SUBSTRING(s.tree_path FROM '^(-?\\d+)') AS INTEGER) * -1 AS number_root
+        FROM public.tag_events te
+        JOIN public.stores s ON s.id_store = te.id_store
+      ) te
+      LEFT JOIN public.area_readers ar ON te.id_area_reader = ar.id_area_reader
+      {% if COMPILE_CONTEXT.securityContext.number_root %}  
+        WHERE number_root = '{ COMPILE_CONTEXT.securityContext.number_root }'
+      {% endif %}
+
+    dimensions:
+      - name: id_tag_event
+        sql: id_tag_event
+        type: number
+
+      - name: id_clip
+        sql: id_clip
+        type: number
+
+      - name: id_company
+        sql: id_company
+        type: number
+
+      - name: id_store
+        sql: id_store
+        type: number
+
+      - name: id_store_area_readers
+        sql: id_store_area_readers
+        type: number
+
+      - name: id_area_reader
+        sql: id_area_reader
+        type: number
+
+      - name: id_area_reader_area_readers
+        sql: id_area_reader_area_readers
+        type: number
+
+      - name: id_reader_type
+        sql: id_reader_type
+        type: number
+
+      - name: active
+        sql: active
+        type: boolean
+
+      - name: age
+        sql: age
+        type: number
+
+      - name: best_shot_score
+        sql: best_shot_score
+        type: number
+
+      - name: face_angle
+        sql: face_angle
+        type: number
+
+      - name: filter_record
+        sql: filter_record
+        type: string
+
+      - name: gender
+        sql: gender
+        type: string
+
+      - name: ip_address
+        sql: ip_address
+        type: string
+
+      - name: last_edit
+        sql: last_edit
+        type: time
+
+      - name: last_edit_area_readers
+        sql: last_edit_area_readers
+        type: time
+
+      - name: timestamp
+        sql: timestamp
+        type: time
+
+      - name: timestamp_last_edit
+        sql: timestamp_last_edit
+        type: time
+
+      - name: timestamp_last_edit_area_readers
+        sql: timestamp_last_edit_area_readers
+        type: time
+
+      - name: x_coordinate
+        sql: x_coordinate
+        type: number
+
+      - name: y_coordinate
+        sql: y_coordinate
+        type: number
+
+      - name: number_root
+        sql: number_root
+        type: number
+
+      - name: number_tag
+        sql: number_tag
+        type: string
+
+      - name: number_receipt_identifier
+        sql: number_receipt_identifier
+        type: string
+
+      - name: rssi
+        sql: rssi
+        type: number
+
+      - name: name
+        sql: name
+        type: string
+
+      - name: type
+        sql: type
+        type: string
+
+
+
+    measures:
+
+
+      - name: multiplier
+        type: number
+        sql: |
+          CASE 
+            WHEN '{ COMPILE_CONTEXT.securityContext.number_root }' = '76' THEN 1.8 
+            ELSE 1 
+          END
+        title: "Dynamic Multiplier"
+
+      - name: count_tag_events
+        type: count
+        sql: "id_tag_event"
+        title: "Tag Events Count"
+
+    
+    refresh_key:
+      every: 12 hour

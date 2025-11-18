@@ -1,0 +1,54 @@
+cubes :
+
+  - name: weiden_wine_section_customer_journeys
+    title: Weiden Wine Customers Journey
+    sql: >
+      SELECT
+        data_day,
+        count(distinct customer_journey_number) AS distinct_visitors_wine
+      FROM vw_weiden_wine_section_customer_journeys_30
+      GROUP BY data_day
+    data_source: my-db2
+    
+    dimensions:
+      - name: id_temp_1_tag_event
+        sql: id_temp_1_tag_event
+        type: number
+      
+      - name: id_store
+        sql: id_store
+        type: number
+
+      - name: id_area_reader
+        sql: id_area_reader
+        type: number
+
+      - name: number_tag
+        sql: number_tag
+        type: number
+
+      - name: timestamp
+        sql: timestamp
+        type: time
+
+      - name: data_day
+        sql: data_day
+        type: time
+
+      - name: week
+        type: number
+        sql: "EXTRACT(WEEK FROM data_day)"
+
+
+      - name: customer_journey_number
+        sql: customer_journey_number
+        type: number
+
+
+    measures:
+
+     - name : wine_distinct
+       type: sum
+       sql: distinct_visitors_wine
+       title: "Number of Shoppers in Wine Area"
+

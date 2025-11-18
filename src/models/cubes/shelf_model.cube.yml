@@ -1,0 +1,158 @@
+cubes:
+  - name: shelf_model
+    sql_table: fact_shelf_attention
+    data_source: cap_2_3d_sensor
+
+    dimensions:
+      - name: attention_id
+        sql: attention_id
+        type: string
+        primary_key: true
+
+      - name: sensor_num
+        sql: sensor_num
+        type: string
+
+      - name: store_id
+        sql: store_id
+        type: string
+
+      - name: shelf_id
+        sql: shelf_id
+        type: string
+
+      - name: shelf_name
+        sql: |
+          CASE 
+            WHEN shelf_name = 'More' THEN 'More Zone'
+            WHEN shelf_name = 'Fullfil' THEN 'Fullfill Zone'
+            ELSE shelf_name
+          END
+        type: string
+
+      - name: track_id
+        sql: track_id
+        type: string
+
+      - name: date
+        sql: date
+        type: time
+
+      - name: session_start_ts
+        sql: session_start_ts
+        type: time
+
+      - name: hour
+        sql: EXTRACT(HOUR FROM {session_start_ts})
+        type: number
+
+      - name: month_name
+        sql: TO_CHAR({date}, 'Month')
+        type: string
+
+      - name: month_number
+        sql: EXTRACT(MONTH FROM {date})
+        type: number
+
+      # Week number
+      - name: week_number
+        sql: EXTRACT(WEEK FROM {date})
+        type: number
+
+# Date (formatted as YYYY-MM-DD)
+      - name: day_only
+        sql: TO_CHAR({date}, 'YYYY-MM-DD')
+        type: time
+
+      - name: session_start_ts
+        sql: session_start_ts
+        type: time
+
+      - name: session_end_ts
+        sql: session_end_ts
+        type: time
+
+      - name: avg_distance_meters
+        sql: avg_distance_meters
+        type: number
+
+      - name: min_distance_meters
+        sql: min_distance_meters
+        type: number
+
+      - name: max_distance_meters
+        sql: max_distance_meters
+        type: number
+
+      - name: total_time_near_shelf
+        sql: total_time_near_shelf
+        type: number
+
+      - name: time_looking_at_shelf
+        sql: time_looking_at_shelf
+        type: number
+
+      - name: time_not_looking_at_shelf
+        sql: time_not_looking_at_shelf
+        type: number
+
+      - name: attention_rate
+        sql: attention_rate
+        type: number
+
+      - name: position_samples
+        sql: position_samples
+        type: number
+
+      - name: avg_angle_degrees
+        sql: avg_angle_degrees
+        type: number
+
+      - name: gender
+        sql: gender
+        type: string
+
+      - name: created_at
+        sql: created_at
+        type: time
+
+      - name: engagement_category
+        sql: engagement_category
+        type: string
+
+    measures:
+      - name: total_attention_time
+        sql: total_time_near_shelf
+        type: sum
+
+      - name: avg_attention_rate
+        sql: 100 * {attention_rate}
+        type: avg
+        title: 'Average Attention Rate'
+
+      - name: total_position_samples
+        sql: position_samples
+        type: sum
+
+
+      - name: count
+        sql: CONCAT({track_id}, '_', {day_only})
+        type: count_distinct
+        title: 'Frequency'
+
+
+
+
+      - name: count_looking
+        sql: CONCAT({track_id}, '_', {day_only})
+        type: count_distinct
+        title: 'Frequency Looking At Shelf'
+        filters:
+          - sql: "{CUBE}.time_looking_at_shelf > 1"
+
+
+
+      - name: percent_looking
+        sql: 100.0 * {count_looking} / NULLIF({count}, 0)
+        type: number
+        title: 'Engagement Rate'

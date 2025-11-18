@@ -1,0 +1,90 @@
+- name: Unimarc_Qa
+  securityContext:
+    number_root: "76"
+  environment: staging
+
+- name: Unimarc_Prod
+  securityContext:
+    number_root: "76"
+  environment: prod
+  
+
+
+- name: Unimarc_demo
+  securityContext:
+    number_root: "76"
+  environment: demo
+
+  
+
+- name: A-Edeka_demo
+  securityContext:
+    number_root: "74"
+  environment: demo
+
+
+- name: A-Edeka_Qa
+  securityContext:
+    number_root: "74"
+  environment: staging
+
+- name: A-Edeka_Prod
+  securityContext:
+    number_root: "74"
+  environment: prod
+  
+
+- name: Despar_Qa
+  securityContext:
+    number_root: "73"
+  environment: staging
+
+- name: Despar_Prod
+  securityContext:
+    number_root: "73"
+  environment: prod
+  
+
+- name: ProGetranke_Qa
+  securityContext:
+    number_root: "71"
+  environment: staging
+
+- name: ProGetranke_Prod
+  securityContext:
+    number_root: "71"
+  environment: prod
+
+
+
+- name: Ferrero_prod
+  securityContext:
+    number_root: "89"
+  environment: prod
+
+
+- name: Ferrero_staging
+  securityContext:
+    number_root: "89"
+  environment: staging
+
+- name: Ferrero_default
+  securityContext:
+    number_root: "89"
+  environment: default
+
+
+
+
+- name: RTG_Qa
+  securityContext:
+    number_root: "92"
+  environment: staging
+
+
+- name: RTG_Prod
+  securityContext:
+    number_root: "92"
+  environment: prod
+  
+  

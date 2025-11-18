@@ -1,0 +1,176 @@
+cubes:
+  - name: receipt_monitoring
+    title: Receipt Monitoring
+    data_source: my-db2
+    sql: >
+      WITH processed_data AS (
+        SELECT DISTINCT
+          rh.id_company,
+          rh.id_store,
+          'processed' AS case_type,
+          DATE(rh.timestamp) AS date,
+          rh.timestamp,
+          CAST(SUBSTRING(tree_path FROM '^(-?\d+)') AS INTEGER) * -1 AS number_root
+        FROM receipt_headers rh
+        JOIN stores s ON rh.id_store = s.id_store
+        WHERE DATE(rh.timestamp) > '2025-01-01'
+
+        UNION
+
+        SELECT DISTINCT
+          s.id_company,
+          s.id_store,
+          'unprocessed' AS case_type,
+          DATE(t1.timestamp) AS date,
+          t1.timestamp,
+          CAST(SUBSTRING(tree_path FROM '^(-?\d+)') AS INTEGER) * -1 AS number_root
+        FROM temp_1_import_receipts t1
+        JOIN stores s ON s.number_store_retailer = t1.number_store_retailer
+        WHERE DATE(t1.timestamp) > '2025-01-01'
+      ),
+      date_range AS (
+        SELECT generate_series(
+          (SELECT MIN(date) FROM processed_data)::date,
+          CURRENT_DATE,
+          '1 day'::interval
+        )::date AS date
+      ),
+      store_list AS (
+        SELECT DISTINCT id_company, id_store, number_root
+        FROM processed_data
+      ),
+      all_combinations AS (
+        SELECT
+          dr.date,
+          s.id_company,
+          s.id_store,
+          s.number_root
+        FROM date_range dr
+        CROSS JOIN store_list s
+      ),
+      all_dates AS (
+        SELECT
+          ac.date,
+          ac.id_company,
+          ac.number_root,
+          ac.id_store,
+          pd.case_type,
+          pd.timestamp,
+          s.name,
+          s.tree_path
+        FROM all_combinations ac
+        LEFT JOIN processed_data pd
+          ON ac.date = pd.date AND ac.id_store = pd.id_store
+        LEFT JOIN stores s
+          ON ac.id_store = s.id_store
+      )
+      SELECT *
+      FROM (
+        SELECT
+          date,
+          id_company,
+          number_root,
+          id_store,
+          name,
+          tree_path,
+          COALESCE(case_type, 'Missing') AS case_type,
+          timestamp
+        FROM all_dates
+      ) final
+      {% if COMPILE_CONTEXT.securityContext.number_root %}
+        WHERE tree_path LIKE '-' || '{ COMPILE_CONTEXT.securityContext.number_root }' || '-%'
+      {% endif %}
+      ORDER BY id_company, id_store, date, number_root
+
+    dimensions:
+      - name: id_company
+        type: number
+        sql: id_company
+
+      - name: number_root
+        sql: |
+          CAST(
+            SPLIT_PART(tree_path, '-', 2) AS INT
+          )
+        type: number
+
+      - name: id_store
+        type: number
+        sql: id_store
+
+      - name: name
+        type: string
+        sql: name
+
+      - name: case_type
+        type: string
+        sql: case_type
+
+      - name: case_type_transformed
+        type: string
+        sql: >
+          CASE
+            WHEN case_type = 'unprocessed' THEN 'Receipts available but not yet processed'
+            WHEN case_type = 'Missing' THEN 'Receipts not yet received'
+            WHEN case_type = 'processed' THEN 'Receipts processed'
+            ELSE case_type
+          END
+
+      - name: tree_path
+        type: string
+        sql: tree_path
+
+      
+      - name: date
+        type: time
+        sql: date
+
+      - name: timestamp
+        type: time
+        sql: timestamp
+
+    measures:
+      - name: case_type_agg
+        title: Case Type Measure
+        type: string
+        sql: STRING_AGG(DISTINCT {case_type_transformed}, ', ')
+
+
+    pre_aggregations:
+      - name: receipts_daily
+        time_dimension: receipt_monitoring.date
+        granularity: day
+        dimensions:
+          - receipt_monitoring.date
+          - receipt_monitoring.name
+          - receipt_monitoring.id_store
+          - receipt_monitoring.case_type_transformed
+        refresh_key:
+          every: 30 minutes
+
+      - name: receipts_daily_timestamp
+        time_dimension: receipt_monitoring.timestamp
+        granularity: day
+        dimensions:
+          - receipt_monitoring.timestamp
+          - receipt_monitoring.name
+          - receipt_monitoring.id_store
+          - receipt_monitoring.case_type_transformed
+        refresh_key:
+          every: 30 minutes
+
+
+        
+
+      - name: receipts_daily_no_store
+        time_dimension: receipt_monitoring.date
+        granularity: day
+        dimensions:
+          - receipt_monitoring.date
+          - receipt_monitoring.name
+          - receipt_monitoring.case_type_transformed
+        refresh_key:
+          every: 30 minutes
+
+
+    

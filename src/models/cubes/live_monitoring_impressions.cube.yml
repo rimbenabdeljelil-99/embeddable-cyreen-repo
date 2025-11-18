@@ -1,0 +1,65 @@
+cubes:
+  - name: live_monitoring_impressions
+    data_source: my-db2
+    sql: |-
+      SELECT
+      tte.id_clip,
+      tte.id_company,
+      ar.id_reader_type,
+      tte.id_store,
+      tte.id_temp_1_tag_event,
+      ar.ip_address,
+      s.name,
+      s.number_store_cyreen,
+      s.tree_path,
+      tte.number_tag,
+      tte.rssi,
+      tte.timestamp,
+      tte.type
+      FROM temp_1_tag_events tte
+      INNER JOIN area_readers ar ON tte.id_area_reader = ar.id_area_reader
+      INNER JOIN stores s ON tte.id_store = s.id_store
+      {% if COMPILE_CONTEXT.securityContext.number_root %}
+      WHERE CAST(SPLIT_PART(S.tree_path, '-', 2) AS INT) = '{ COMPILE_CONTEXT.securityContext.number_root }'
+      {% endif %}
+    
+    dimensions:
+      - name: id
+        type: string
+        sql: id
+        primary_key: true
+        public: true
+      - name: created_at
+        type: time
+        sql: created_at
+      - name: tag_number
+        type: string
+        sql: number_tag
+      - name: rssi
+        type: string
+        sql: rssi
+      - name: timestamp
+        type: time
+        sql: timestamp
+      - name: type
+        type: string
+        sql: type
+      - name: name
+        type: string
+        sql: name
+      - name: ip_address
+        type: string
+        sql: ip_address
+      - name: id_clip
+        type: string
+        sql: id_clip
+      - name: id_store
+        type: number
+        sql: id_store
+      - name: number_root
+        type: number
+        sql: "CAST(SPLIT_PART(tree_path, '-', 2) AS INT)"
+    
+    measures:
+      - name: count
+        type: count

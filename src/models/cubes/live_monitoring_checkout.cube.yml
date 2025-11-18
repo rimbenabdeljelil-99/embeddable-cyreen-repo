@@ -1,0 +1,63 @@
+cubes:
+  - name: live_monitoring_checkout
+    data_source: my-db2
+    sql: |-
+      select
+      pce.number_checkout,
+      pce.timestamp,
+      pce.number_tag,
+      pce.rssi,
+      s.id_store,
+      s.id_store_status,
+      s.name,
+      s.tree_path,
+      cr.ip_address,
+      cr.id_checkout_reader
+      from prefiltered_checkout_events pce
+      inner join
+      checkout_readers cr on pce.id_checkout_reader = cr.id_checkout_reader
+      inner join
+      stores s on pce.id_store = s.id_store
+      {% if COMPILE_CONTEXT.securityContext.number_root %}
+      WHERE CAST(SPLIT_PART(S.tree_path, '-', 2) AS INT) = '{ COMPILE_CONTEXT.securityContext.number_root }'
+      {% endif %}
+    
+    dimensions:
+      - name: id
+        type: string
+        sql: id
+        primary_key: true
+        public: true
+      - name: created_at
+        type: time
+        sql: created_at
+      - name: checkout_number
+        type: number
+        sql: number_checkout
+      - name: id_store
+        type: number
+        sql: id_store
+      - name: name
+        type: string
+        sql: name
+      - name: number_root
+        type: number
+        sql: "CAST(SPLIT_PART(tree_path, '-', 2) AS INT)"
+      - name: tag_number
+        type: string
+        sql: number_tag
+      - name: timestamp
+        type: time
+        sql: timestamp
+      - name: ip_address
+        type: string
+        sql: ip_address
+        title: IP Address
+      - name: rssi
+        type: number
+        sql: rssi
+        title: RSSI
+    
+    measures:
+      - name: count
+        type: count

@@ -1,0 +1,288 @@
+cubes:
+
+  - name: weiden_by_areas_percent
+    title: Weiden By Areas Percent
+    sql: >
+      WITH journeys AS (
+        SELECT
+          data_day,
+          customer_journey_number,
+          ARRAY_AGG(id_area_reader ORDER BY timestamp ASC) AS ordered_readers
+        FROM vw_weiden_all_customer_journeys_30
+        GROUP BY data_day, customer_journey_number
+      )
+      SELECT *
+      FROM journeys
+
+    data_source: my-db2
+
+    dimensions:
+      - name: data_day
+        sql: data_day
+        type: time
+
+      - name: customer_journey_number
+        sql: customer_journey_number
+        type: number
+
+      - name: ordered_readers
+        sql: ordered_readers
+        type: string
+
+      - name: week
+        sql: "EXTRACT(WEEK FROM data_day)"
+        type: number
+
+      - name: day_only
+        sql: "TO_CHAR({CUBE}.data_day, 'YYYY-MM-DD')"
+        type: time
+
+    measures:
+
+      - name: total_frequency_start_end_101
+        type: count
+        sql: |
+          CASE
+            WHEN array_length({CUBE}.ordered_readers,1) > 1
+              AND {CUBE}.ordered_readers[1] = 101
+              AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)] = 101
+            THEN {CUBE}.customer_journey_number
+          END
+        title: "Total Frequency (starts and ends at 101)"
+
+
+
+      - name: total_frequency_second
+        type: count
+        sql: |
+          CASE
+            WHEN array_length({CUBE}.ordered_readers,1) > 1
+              AND {CUBE}.ordered_readers[1] = 101
+            AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)] = 101
+            AND 102 = ANY({CUBE}.ordered_readers)
+          THEN {CUBE}.customer_journey_number
+          END
+        title: "Total Frequency Second (starts and ends with 101)"
+
+      - name: total_frequency_wine
+        type: count
+        sql: |
+          CASE
+            WHEN array_length({CUBE}.ordered_readers,1) > 1
+            AND {CUBE}.ordered_readers[1] = 101
+            AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)] = 101
+            AND 103 = ANY({CUBE}.ordered_readers)
+          THEN {CUBE}.customer_journey_number
+          END
+        title: "Total Frequency Wine (starts and ends with 101)"
+
+
+
+
+
+      - name: entrance_to_102_version_2
+        type: count
+        sql: |
+          CASE
+            WHEN array_length({CUBE}.ordered_readers,1) > 1
+            AND {CUBE}.ordered_readers[1] = 101
+            AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)] = 101
+            AND (
+            SELECT val
+          FROM unnest({CUBE}.ordered_readers) WITH ORDINALITY AS t(val, idx)
+          WHERE idx > 1 AND val != 101
+          ORDER BY idx
+          LIMIT 1
+          ) = 102
+          THEN {CUBE}.customer_journey_number
+          END
+        title: "Journeys from 101 to 102 (after first 101 block)"
+
+
+      - name: pct_101_to_102_version_2
+        type: number
+        sql: "100.0 * {entrance_to_102_version_2} / NULLIF({total_frequency_start_end_101},0)"
+        format: "percent"
+        title: "% from 101 to 102"
+
+
+
+      - name: entrance_to_103_verion_2
+        type: count
+        sql: |
+          CASE
+          WHEN array_length({CUBE}.ordered_readers,1) > 1
+          AND {CUBE}.ordered_readers[1] = 101
+          AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)] = 101
+          AND (
+            SELECT val
+            FROM unnest({CUBE}.ordered_readers) WITH ORDINALITY AS t(val, idx)
+            WHERE idx > 1 AND val != 101
+            ORDER BY idx
+            LIMIT 1
+          ) = 103
+            THEN {CUBE}.customer_journey_number
+          END
+        title: "Journeys from 101 to 103"
+
+        
+
+
+      - name: pct_101_to_103_version_2
+        type: number
+        sql: "100.0 * {entrance_to_103_verion_2} / NULLIF({total_frequency_start_end_101},0)"
+        title: "% from 101 to 103"
+
+        
+
+      -  name: from_102_to_103
+         type: count
+         sql: |
+          CASE 
+            WHEN array_length({CUBE}.ordered_readers,1) > 1
+              AND {CUBE}.ordered_readers[1] = 101
+              AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)] = 101
+              AND EXISTS (
+              SELECT 1
+            FROM generate_series(1, array_length({CUBE}.ordered_readers,1)-1) AS i
+            WHERE {CUBE}.ordered_readers[i] = 102 
+              AND {CUBE}.ordered_readers[i+1] = 103
+          )
+          THEN {CUBE}.customer_journey_number
+          END
+         title: "Journeys from 102 to 103 (starts and ends with 101)"
+
+
+      - name: pct_102_to_103
+        type: number
+        sql: "100.0 * {from_102_to_103} / NULLIF({total_frequency_second},0)"
+        format: "percent"
+        title: "% from 102 to 103"
+
+
+      -  name: from_102_to_102
+         type: count
+         sql: |
+          CASE 
+            WHEN array_length({CUBE}.ordered_readers,1) > 1
+              AND {CUBE}.ordered_readers[1] = 101
+              AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)] = 101
+              AND EXISTS (
+              SELECT 1
+            FROM generate_series(1, array_length({CUBE}.ordered_readers,1)-1) AS i
+            WHERE {CUBE}.ordered_readers[i] = 102 
+              AND {CUBE}.ordered_readers[i+1] = 102
+          )
+          THEN {CUBE}.customer_journey_number
+          END
+         title: "Journeys from 102 to 102 (starts and ends with 101)"
+
+
+      - name: pct_102_to_102
+        type: number
+        sql: "100.0 * {from_102_to_102} / NULLIF({total_frequency_second},0)"
+        format: "percent"
+        title: "% from 102 to 102"
+
+      -  name: from_103_to_102
+         type: count
+         sql: |
+          CASE 
+            WHEN array_length({CUBE}.ordered_readers,1) > 1
+              AND {CUBE}.ordered_readers[1] = 101
+              AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)] = 101
+              AND EXISTS (
+              SELECT 1
+            FROM generate_series(1, array_length({CUBE}.ordered_readers,1)-1) AS i
+            WHERE {CUBE}.ordered_readers[i] = 103
+              AND {CUBE}.ordered_readers[i+1] = 102
+          )
+          THEN {CUBE}.customer_journey_number
+          END
+         title: "Journeys from 103 to 102 (starts and ends with 101)"
+
+      - name: pct_103_to_102
+        type: number
+        sql: "100.0 * {from_103_to_102} / NULLIF({total_frequency_wine},0)"
+        format: "percent"
+        title: "% from 103 to 102"
+
+      - name: from_103_to_101
+        type: count
+        sql: |
+          CASE
+            WHEN array_length({CUBE}.ordered_readers,1) > 2
+            AND {CUBE}.ordered_readers[1] = 101
+            AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)] = 101
+              AND (
+              {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)-1] = 103
+          OR (
+            array_length({CUBE}.ordered_readers,1) > 3
+            AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)-2] = 103
+            AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)-1] = 101
+          )
+          )
+          THEN {CUBE}.customer_journey_number
+          END
+        title: "Journeys from 103 to 101 (consecutive, ends at 101)"
+
+
+      - name: pct_103_to_101
+        type: number
+        sql: "100.0 * {from_103_to_101} / NULLIF({total_frequency_wine},0)"
+        format: "percent"
+        title: "% from 103 to 101"
+
+      - name: from_102_to_101
+        type: count
+        sql: |
+          CASE
+            WHEN array_length({CUBE}.ordered_readers,1) > 2
+            AND {CUBE}.ordered_readers[1] = 101
+            AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)] = 101
+              AND (
+              {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)-1] = 102
+          OR (
+            array_length({CUBE}.ordered_readers,1) > 3
+            AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)-2] = 102
+            AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)-1] = 101
+          )
+          )
+          THEN {CUBE}.customer_journey_number
+          END
+        title: "Journeys from 102 to 101 (consecutive, ends at 101)"
+
+
+      - name: pct_102_to_101
+        type: number
+        sql: "100.0 * {from_102_to_101} / NULLIF({total_frequency_second},0)"
+        format: "percent"
+        title: "% from 102 to 101"
+
+      - name: entrance_exit_only
+        type: count
+        sql: |
+          CASE
+            WHEN array_length({CUBE}.ordered_readers,1) > 1
+              AND {CUBE}.ordered_readers[1] = 101
+              AND {CUBE}.ordered_readers[array_length({CUBE}.ordered_readers,1)] = 101
+              AND NOT EXISTS (
+                SELECT 1
+                FROM unnest({CUBE}.ordered_readers[2:array_length({CUBE}.ordered_readers,1)-1]) AS r
+                WHERE r <> 101
+              )
+            THEN {CUBE}.customer_journey_number
+          END
+        title: "Entered and left via 101 only"
+
+
+      - name: pct_entrance_exit_only
+        type: number
+        sql: "100.0 * {entrance_exit_only} / NULLIF({total_frequency_start_end_101},0)"
+        format: "percent"
+        title: "% entered and left via 101 only"
+
+      - name: total_journeys
+        type: count
+        sql: customer_journey_number
+        title: "Number of Journeys"

@@ -1,0 +1,60 @@
+cubes:
+  - name: vw_shelf_changes_business
+    title: Shelf Change Business
+    sql: >
+      SELECT
+        week,
+        zone,
+        axle_nr,
+        change_type,
+        before,
+        after,
+        impact,
+        status,
+        change_date
+      FROM vw_shelf_changes_business
+
+    data_source: cap_2_3d_sensor
+
+
+    dimensions:
+      - name: week
+        sql: week
+        type: string
+
+      - name: zone
+        sql: zone
+        type: string
+
+
+      - name: axle_nr
+        sql: axle_nr
+        type: string
+
+      - name: change_type
+        sql: change_type
+        type: string
+
+      - name: before
+        sql: before
+        type: string
+
+      - name: after
+        sql: after
+        type: string
+
+
+      - name: impact
+        sql: impact
+        type: string
+
+      - name: status
+        sql: status
+        type: string
+
+
+      - name: change_date
+        sql: change_date
+        type: string
+
+
